@@ -58,4 +58,4 @@ exactly four `options` and a `correct` index (0–3). The full schema is defined
 
 ## License
 
-TBD.
+[MIT](LICENSE) © kmch4n
