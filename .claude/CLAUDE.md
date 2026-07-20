@@ -1,50 +1,41 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+このリポジトリで作業する際の契約。グローバル規約（コミット・コードスタイル等）と重複する内容は書かない。
 
-## 重要: ユーザーからの指示
+## 言語
 
-このプロジェクトは日本語が母語の日本人によって開発されています。可能な限り日本語で回答してください。
-ただし、技術的な用語は無理に翻訳を行わずとも問題ありません。
+日本語で回答する。技術用語は無理に訳さない。コード・コミット・PR 等の成果物は英語。
 
-## Project Overview
+## Project
 
-Selecta is an Astro-based four-choice quiz PWA with Anki-compatible data. Quizzes are
-loaded client-side from a JSON file or URL and answered in the browser; the app also
-converts between CSV, JSON, and Anki export formats.
+Selecta — Anki 互換の 4 択クイズ PWA。JSON ファイルまたは URL でクイズを読み込みブラウザで解答する。
+CSV / JSON / Anki の相互変換も持つ。すべてクライアントサイドで完結し、サーバは不要。
 
-## Development Commands
+## Commands (PNPM)
 
-Use PNPM for all package management operations:
-
-- `pnpm install` - Install dependencies
-- `pnpm run dev` - Start development server at localhost:4321
-- `pnpm run build` - Build production site to ./dist/
-- `pnpm run preview` - Preview production build locally
-- `pnpm run astro ...` - Run Astro CLI commands
+- `pnpm run dev` — dev server @ localhost:4321
+- `pnpm run build` — build to `./dist/`
+- `pnpm run preview` — preview the production build
 
 ## Architecture
 
-- **Framework**: Astro 5 with TypeScript (strict configuration)
-- **Styling**: A hand-written CSS design system, "Frost" (`src/styles/main.css`) — no CSS
-  framework. Design tokens drive light/dark themes, frosted-glass surfaces, and pill buttons.
-- **PWA**: `@vite-pwa/astro` (autoUpdate, Workbox-based service worker)
-- **Package Manager**: PNPM
-- **Build Tool**: Astro's built-in Vite-based build system
+- **Astro 5 + TypeScript (strict)**。ページロジックは各 `.astro` のインライン `<script>` 内クラスに集約
+  （独立した JS モジュールは持たない）。
+- **Styling**: 自前 CSS デザインシステム "Frost"（`src/styles/main.css`）。CSS フレームワークは使わない
+  （Bulma は廃止済み）。デザイントークンで light/dark、frosted glass、pill button を駆動。
+- **PWA**: `@vite-pwa/astro`（autoUpdate, Workbox）。
 
-## Project Structure
+## Layout
 
-- `src/pages/` - Astro pages that map to routes (`index.astro` = quiz player,
-  `convert.astro` = format converter). Page logic lives in inline `<script>` classes.
-- `src/components/` - `Layout.astro`, `NavBar.astro`, `Footer.astro`
-- `src/styles/main.css` - The "Frost" design system
-- `public/` - Static assets served directly (`favicon.svg`, `sample-quiz.json`)
-- `quiz-schema.json` - JSON Schema for the quiz data format (four `options`, `correct` 0–3)
-- `astro.config.mjs` - Astro + PWA configuration
-- `tsconfig.json` - Extends Astro's strict TypeScript configuration
+- `src/pages/index.astro` — クイズプレイヤー / `src/pages/convert.astro` — 形式変換
+- `src/components/` — `Layout` / `NavBar` / `Footer`
+- `src/styles/main.css` — Frost デザインシステム
+- `quiz-schema.json` — クイズデータの JSON Schema / `public/` — `favicon.svg`, `sample-quiz.json`
 
-## Key Notes
+## 契約 (Conventions)
 
-- TypeScript configuration extends Astro's strict preset.
-- Quiz data contract: `options` must have exactly 4 entries; `correct` is a 0–3 index.
-  See `quiz-schema.json`.
+- **データ契約**: `options` はちょうど 4 要素、`correct` は 0–3 のインデックス。`quiz-schema.json` に準拠。
+- **デザイン**: 色やスペースは `main.css` の `:root` トークン経由で扱い、直書きしない。light/dark 両テーマを必ず維持する。
+- **ブランド**: 表記は "Selecta" のみ。旧名 "AnySlash" / "anyslash" / "Osumi Akari" / "oageo" は使わない。
+  作者は kmch4n（https://kmchan.jp）、リポジトリは https://github.com/kmch4n/Selecta。
+- **エンコード**: すべて UTF-8（BOM なし）/ LF。
