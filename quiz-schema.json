@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Quiz Data Schema",
+  "description": "4択クイズデータのスキーマ（Anki互換）",
+  "type": "object",
+  "properties": {
+    "meta": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "クイズセットのタイトル"
+        },
+        "description": {
+          "type": "string",
+          "description": "クイズセットの説明"
+        },
+        "version": {
+          "type": "string",
+          "description": "データのバージョン"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "作成日時"
+        }
+      },
+      "required": ["title"]
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "質問の一意識別子"
+          },
+          "question": {
+            "type": "string",
+            "description": "質問文（Ankiのfront相当）"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 4,
+            "maxItems": 4,
+            "description": "4つの選択肢"
+          },
+          "correct": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3,
+            "description": "正解の選択肢インデックス（0-3）"
+          },
+          "explanation": {
+            "type": "string",
+            "description": "解説（Ankiのback相当）"
+          },
+          "deck": {
+            "type": "string",
+            "description": "所属デッキ名"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "タグ配列"
+          },
+          "difficulty": {
+            "type": "string",
+            "enum": ["easy", "medium", "hard"],
+            "description": "難易度"
+          }
+        },
+        "required": ["id", "question", "options", "correct"]
+      }
+    }
+  },
+  "required": ["meta", "questions"]
+}

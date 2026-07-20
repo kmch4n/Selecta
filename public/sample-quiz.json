@@ -1,0 +1,37 @@
+{
+    "meta": {
+        "title": "サンプルクイズ - Web基礎",
+        "description": "Selectaの動作確認用サンプルクイズです",
+        "version": "1.0",
+        "created": "2026-07-20T00:00:00.000Z"
+    },
+    "questions": [
+        {
+            "id": "q-1",
+            "question": "HTMLでリンクを作成するタグはどれですか？",
+            "options": ["<link>", "<a>", "<href>", "<url>"],
+            "correct": 1,
+            "explanation": "<a>タグのhref属性にURLを指定することでリンクを作成できます。",
+            "deck": "Web基礎",
+            "tags": ["HTML", "基礎"]
+        },
+        {
+            "id": "q-2",
+            "question": "CSSでテキストの色を指定するプロパティはどれですか？",
+            "options": ["background-color", "color", "text-color", "font-color"],
+            "correct": 1,
+            "explanation": "colorプロパティはテキストの色を指定するために使用します。",
+            "deck": "Web基礎",
+            "tags": ["CSS", "スタイル"]
+        },
+        {
+            "id": "q-3",
+            "question": "JavaScriptで定数を宣言するキーワードはどれですか？",
+            "options": ["var", "let", "const", "static"],
+            "correct": 2,
+            "explanation": "constで宣言した変数は再代入できません。",
+            "deck": "Web基礎",
+            "tags": ["JavaScript", "基礎"]
+        }
+    ]
+}

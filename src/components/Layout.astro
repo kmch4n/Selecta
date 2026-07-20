@@ -1,0 +1,30 @@
+---
+export interface Props {
+    title: string;
+}
+
+const { title } = Astro.props;
+import Footer from './Footer.astro';
+import '../styles/main.css';
+---
+
+<html lang="ja">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="generator" content={Astro.generator} />
+        <title>{title}</title>
+        <meta name="description" content="4択クイズアプリ（Anki互換）" />
+        <meta name="theme-color" content="#ecf4fa" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#0c151d" media="(prefers-color-scheme: dark)" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content="4択クイズアプリ（Anki互換）" />
+        <meta name="twitter:card" content="summary" />
+    </head>
+    <body>
+        <slot />
+        <Footer />
+    </body>
+</html>

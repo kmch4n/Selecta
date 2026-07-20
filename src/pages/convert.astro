@@ -1,0 +1,483 @@
+---
+import Layout from '../components/Layout.astro';
+import NavBar from '../components/NavBar.astro';
+---
+
+<Layout title="Selecta - ファイル形式変換">
+    <NavBar showQuizLink={true} />
+
+    <main class="shell shell--wide stack-lg">
+        <div class="stack-md">
+            <p class="eyebrow">Tools</p>
+            <h2 class="display">ファイル形式変換</h2>
+            <p class="muted">CSV・JSON・Ankiエクスポートをクイズ形式に相互変換します。</p>
+        </div>
+
+        <div class="seg" role="tablist" aria-label="変換の種類">
+            <button type="button" class="seg__btn is-active" data-tab="csv-to-json" role="tab" aria-selected="true">
+                CSV → JSON
+            </button>
+            <button type="button" class="seg__btn" data-tab="json-to-csv" role="tab" aria-selected="false">
+                JSON → CSV
+            </button>
+            <button type="button" class="seg__btn" data-tab="anki-to-json" role="tab" aria-selected="false">
+                Anki → JSON
+            </button>
+        </div>
+
+        <!-- CSV to JSON -->
+        <section id="csv-to-json" class="tab-content card-glass stack-lg">
+            <div class="stack-md">
+                <h3 class="display">CSV → JSON変換</h3>
+                <p class="help">CSVファイルのフォーマット（ヘッダー行必須）:</p>
+                <code>question,option1,option2,option3,option4,correct,explanation,deck,tags</code>
+            </div>
+
+            <div class="field">
+                <span class="label">CSVファイル</span>
+                <label class="file-btn btn-row">
+                    <input type="file" accept=".csv" id="csv-file" />
+                    <span class="btn btn--ghost">CSVファイルを選択</span>
+                    <span class="file-btn__name" id="csv-file-name"></span>
+                </label>
+            </div>
+
+            <div class="field">
+                <label class="label" for="csv-title">クイズタイトル</label>
+                <input class="input" type="text" id="csv-title" placeholder="変換されたクイズのタイトル" />
+            </div>
+
+            <div class="field">
+                <button type="button" class="btn" id="convert-csv-btn">JSON形式に変換</button>
+            </div>
+
+            <div id="csv-result" class="stack-md" style="display: none;">
+                <p class="label">変換結果</p>
+                <textarea class="textarea textarea--code" id="csv-json-output" rows="10" readonly></textarea>
+                <button type="button" class="btn btn--ok" id="download-csv-json-btn">JSONファイルをダウンロード</button>
+            </div>
+        </section>
+
+        <!-- JSON to CSV -->
+        <section id="json-to-csv" class="tab-content card-glass stack-lg" style="display: none;">
+            <h3 class="display">JSON → CSV変換</h3>
+
+            <div class="field">
+                <span class="label">JSONファイル</span>
+                <label class="file-btn btn-row">
+                    <input type="file" accept=".json" id="json-file" />
+                    <span class="btn btn--ghost">JSONファイルを選択</span>
+                    <span class="file-btn__name" id="json-file-name"></span>
+                </label>
+            </div>
+
+            <div class="field">
+                <button type="button" class="btn" id="convert-json-btn">CSV形式に変換</button>
+            </div>
+
+            <div id="json-result" class="stack-md" style="display: none;">
+                <p class="label">変換結果</p>
+                <textarea class="textarea textarea--code" id="json-csv-output" rows="10" readonly></textarea>
+                <div class="btn-row">
+                    <button type="button" class="btn btn--ok" id="download-json-csv-btn">
+                        標準CSV（UTF-8）をダウンロード
+                    </button>
+                    <button type="button" class="btn btn--ghost" id="download-json-excel-csv-btn">
+                        Excel用CSV（BOM付きUTF-8）をダウンロード
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Anki to JSON -->
+        <section id="anki-to-json" class="tab-content card-glass stack-lg" style="display: none;">
+            <div class="stack-md">
+                <h3 class="display">Anki → JSON変換</h3>
+                <p class="help">Ankiのエクスポート形式（タブ区切り）に対応:</p>
+                <code>質問[TAB]答え[TAB]選択肢1|選択肢2|選択肢3|選択肢4</code>
+                <p class="help">※ 答えが選択肢の中に含まれている必要があります</p>
+            </div>
+
+            <div class="field">
+                <span class="label">Ankiファイル (.txt)</span>
+                <label class="file-btn btn-row">
+                    <input type="file" accept=".txt" id="anki-file" />
+                    <span class="btn btn--ghost">Ankiファイルを選択</span>
+                    <span class="file-btn__name" id="anki-file-name"></span>
+                </label>
+            </div>
+
+            <div class="field">
+                <label class="label" for="anki-title">クイズタイトル</label>
+                <input class="input" type="text" id="anki-title" placeholder="変換されたクイズのタイトル" />
+            </div>
+
+            <div class="field">
+                <button type="button" class="btn" id="convert-anki-btn">JSON形式に変換</button>
+            </div>
+
+            <div id="anki-result" class="stack-md" style="display: none;">
+                <p class="label">変換結果</p>
+                <textarea class="textarea textarea--code" id="anki-json-output" rows="10" readonly></textarea>
+                <button type="button" class="btn btn--ok" id="download-anki-json-btn">JSONファイルをダウンロード</button>
+            </div>
+        </section>
+
+        <section class="card-glass stack-md">
+            <h3 class="display">サンプルファイル</h3>
+            <p class="help">変換機能をテストするためのサンプルファイル:</p>
+            <div class="btn-row">
+                <a href="/sample-quiz.json" class="btn btn--ghost" download>サンプルJSONをダウンロード</a>
+                <button type="button" class="btn btn--ghost" id="generate-sample-csv">サンプルCSV（標準）を生成</button>
+                <button type="button" class="btn btn--ghost" id="generate-sample-excel-csv">
+                    サンプルCSV（Excel用）を生成
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        class FileConverter {
+            constructor() {
+                this.setupEventListeners();
+            }
+
+            private setupEventListeners() {
+                // Tab navigation
+                document.querySelectorAll('[data-tab]').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.switchTab((e.currentTarget as HTMLElement).dataset.tab!);
+                    });
+                });
+
+                // 選択したファイル名の表示
+                document.querySelectorAll('.file-btn input[type="file"]').forEach(input => {
+                    input.addEventListener('change', (e) => {
+                        const el = e.currentTarget as HTMLInputElement;
+                        const nameSpan = document.getElementById(`${el.id}-name`);
+                        if (nameSpan) {
+                            nameSpan.textContent = el.files?.[0]?.name ?? '';
+                        }
+                    });
+                });
+
+                // CSV to JSON
+                document.getElementById('convert-csv-btn')!.addEventListener('click', () => this.convertCsvToJson());
+                document.getElementById('download-csv-json-btn')!.addEventListener('click', () => this.downloadFile('csv-json-output', 'quiz.json'));
+
+                // JSON to CSV
+                document.getElementById('convert-json-btn')!.addEventListener('click', () => this.convertJsonToCsv());
+                document.getElementById('download-json-csv-btn')!.addEventListener('click', () => this.downloadFile('json-csv-output', 'quiz.csv'));
+                document.getElementById('download-json-excel-csv-btn')!.addEventListener('click', () => this.downloadExcelCsv());
+
+                // Anki to JSON
+                document.getElementById('convert-anki-btn')!.addEventListener('click', () => this.convertAnkiToJson());
+                document.getElementById('download-anki-json-btn')!.addEventListener('click', () => this.downloadFile('anki-json-output', 'quiz.json'));
+
+                // Sample CSV generator
+                document.getElementById('generate-sample-csv')!.addEventListener('click', () => this.generateSampleCsv());
+                document.getElementById('generate-sample-excel-csv')!.addEventListener('click', () => this.generateSampleExcelCsv());
+            }
+
+            private switchTab(tabId: string) {
+                // Remove active class from all tabs
+                document.querySelectorAll('[data-tab]').forEach(tab => {
+                    tab.classList.remove('is-active');
+                    tab.setAttribute('aria-selected', 'false');
+                });
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    (content as HTMLElement).style.display = 'none';
+                });
+
+                // Add active class to selected tab
+                const activeTab = document.querySelector(`[data-tab="${tabId}"]`)!;
+                activeTab.classList.add('is-active');
+                activeTab.setAttribute('aria-selected', 'true');
+                document.getElementById(tabId)!.style.display = '';
+            }
+
+            private async convertCsvToJson() {
+                const fileInput = document.getElementById('csv-file') as HTMLInputElement;
+                const titleInput = document.getElementById('csv-title') as HTMLInputElement;
+                const file = fileInput.files?.[0];
+
+                if (!file) {
+                    alert('CSVファイルを選択してください');
+                    return;
+                }
+
+                try {
+                    const text = await file.text();
+                    const lines = text.split('\n').filter(line => line.trim());
+
+                    const questions = lines.slice(1).map((line, index) => {
+                        const values = this.parseCSVLine(line);
+                        return {
+                            id: `q-${index + 1}`,
+                            question: values[0] || '',
+                            options: [values[1] || '', values[2] || '', values[3] || '', values[4] || ''],
+                            correct: parseInt(values[5]) || 0,
+                            explanation: values[6] || '',
+                            deck: values[7] || 'Default',
+                            tags: values[8] ? values[8].split('|').map(t => t.trim()) : []
+                        };
+                    }).filter(q => q.question && q.options.every(o => o));
+
+                    const jsonData = {
+                        meta: {
+                            title: titleInput.value || 'CSV変換クイズ',
+                            description: 'CSVファイルから変換されたクイズです',
+                            version: '1.0',
+                            created: new Date().toISOString()
+                        },
+                        questions
+                    };
+
+                    const jsonOutput = document.getElementById('csv-json-output') as HTMLTextAreaElement;
+                    jsonOutput.value = JSON.stringify(jsonData, null, 2);
+                    document.getElementById('csv-result')!.style.display = '';
+
+                } catch (error) {
+                    alert('CSVファイルの変換に失敗しました: ' + error);
+                }
+            }
+
+            private async convertJsonToCsv() {
+                const fileInput = document.getElementById('json-file') as HTMLInputElement;
+                const file = fileInput.files?.[0];
+
+                if (!file) {
+                    alert('JSONファイルを選択してください');
+                    return;
+                }
+
+                try {
+                    const text = await file.text();
+                    const jsonData = JSON.parse(text);
+
+                    const csvLines = ['question,option1,option2,option3,option4,correct,explanation,deck,tags'];
+
+                    jsonData.questions.forEach((q: any) => {
+                        const tags = q.tags ? q.tags.join('|') : '';
+                        const line = [
+                            `"${q.question || ''}"`,
+                            `"${q.options[0] || ''}"`,
+                            `"${q.options[1] || ''}"`,
+                            `"${q.options[2] || ''}"`,
+                            `"${q.options[3] || ''}"`,
+                            q.correct || 0,
+                            `"${q.explanation || ''}"`,
+                            `"${q.deck || ''}"`,
+                            `"${tags}"`
+                        ].join(',');
+                        csvLines.push(line);
+                    });
+
+                    const csvOutput = document.getElementById('json-csv-output') as HTMLTextAreaElement;
+                    csvOutput.value = csvLines.join('\n');
+                    document.getElementById('json-result')!.style.display = '';
+
+                } catch (error) {
+                    alert('JSONファイルの変換に失敗しました: ' + error);
+                }
+            }
+
+            private async convertAnkiToJson() {
+                const fileInput = document.getElementById('anki-file') as HTMLInputElement;
+                const titleInput = document.getElementById('anki-title') as HTMLInputElement;
+                const file = fileInput.files?.[0];
+
+                if (!file) {
+                    alert('Ankiファイルを選択してください');
+                    return;
+                }
+
+                try {
+                    const text = await file.text();
+                    const lines = text.split('\n').filter(line => line.trim());
+
+                    const questions = lines.map((line, index) => {
+                        const parts = line.split('\t');
+                        if (parts.length < 3) return null;
+
+                        const question = parts[0].trim();
+                        const answer = parts[1].trim();
+                        const optionsText = parts[2].trim();
+                        const options = optionsText.split('|').map(o => o.trim());
+
+                        if (options.length !== 4) return null;
+
+                        const correctIndex = options.findIndex(option =>
+                            option.toLowerCase().includes(answer.toLowerCase()) ||
+                            answer.toLowerCase().includes(option.toLowerCase())
+                        );
+
+                        if (correctIndex === -1) return null;
+
+                        return {
+                            id: `anki-${index + 1}`,
+                            question,
+                            options,
+                            correct: correctIndex,
+                            explanation: `正解は「${answer}」です。`,
+                            deck: 'Anki Import',
+                            tags: ['anki']
+                        };
+                    }).filter(q => q !== null);
+
+                    const jsonData = {
+                        meta: {
+                            title: titleInput.value || 'Anki変換クイズ',
+                            description: 'Ankiファイルから変換されたクイズです',
+                            version: '1.0',
+                            created: new Date().toISOString()
+                        },
+                        questions
+                    };
+
+                    const jsonOutput = document.getElementById('anki-json-output') as HTMLTextAreaElement;
+                    jsonOutput.value = JSON.stringify(jsonData, null, 2);
+                    document.getElementById('anki-result')!.style.display = '';
+
+                } catch (error) {
+                    alert('Ankiファイルの変換に失敗しました: ' + error);
+                }
+            }
+
+            private parseCSVLine(line: string): string[] {
+                const result: string[] = [];
+                let current = '';
+                let inQuotes = false;
+
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        result.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+
+                result.push(current.trim());
+                return result;
+            }
+
+            private downloadFile(outputId: string, filename: string) {
+                const output = document.getElementById(outputId) as HTMLTextAreaElement;
+                const blob = new Blob([output.value], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            private downloadExcelCsv() {
+                const output = document.getElementById('json-csv-output') as HTMLTextAreaElement;
+                if (!output.value) {
+                    alert('まずJSONをCSVに変換してください');
+                    return;
+                }
+
+                // 標準CSVをExcel用タブ区切り形式に変換
+                const excelCsv = this.convertToExcelFormat(output.value);
+
+                // BOM付きUTF-8でBlob作成
+                const bom = "\uFEFF";
+                const blob = new Blob([bom + excelCsv], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'quiz_excel.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            private convertToExcelFormat(csvContent: string): string {
+                // CSVをExcelで安全に開けるように調整（カンマ区切りを維持）
+                const lines = csvContent.split('\n');
+                const excelLines = lines.map(line => {
+                    // CSVパースして各フィールドを取得
+                    const fields = this.parseCSVLine(line);
+
+                    // 各フィールドをカンマ区切りで結合、Excel用に最適化
+                    return fields.map(field => {
+                        // 既存のダブルクォートを除去
+                        let cleanField = field.replace(/^"|"$/g, '');
+
+                        // Excel用の特殊処理
+                        // 1. 長い数値の自動変換を防ぐ
+                        if (/^\d+$/.test(cleanField) && cleanField.length > 15) {
+                            cleanField = `="${cleanField}"`;
+                        }
+
+                        // 2. 改行とタブを空白に置換
+                        cleanField = cleanField.replace(/[\r\n\t]/g, ' ');
+
+                        // 3. カンマ、ダブルクォート、改行を含む場合はクォートで囲む
+                        if (cleanField.includes(',') || cleanField.includes('"') || cleanField.includes('\n')) {
+                            // 内部のダブルクォートをエスケープ
+                            cleanField = cleanField.replace(/"/g, '""');
+                            cleanField = `"${cleanField}"`;
+                        }
+
+                        return cleanField;
+                    }).join(',');
+                });
+
+                return excelLines.join('\n');
+            }
+
+            private generateSampleCsv() {
+                const sampleCsv = `question,option1,option2,option3,option4,correct,explanation,deck,tags
+"HTMLでリンクを作成するタグはどれですか？","<link>","<a>","<href>","<url>",1,"<a>タグのhref属性にURLを指定することでリンクを作成できます。","Web基礎","HTML|基礎"
+"CSSでテキストの色を赤にするプロパティはどれですか？","background-color: red;","color: red;","text-color: red;","font-color: red;",1,"colorプロパティはテキストの色を指定するために使用します。","Web基礎","CSS|スタイル"`;
+
+                const blob = new Blob([sampleCsv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'sample-quiz.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            private generateSampleExcelCsv() {
+                // Excel用CSVサンプル（BOM付きUTF-8、カンマ区切り）
+                const sampleExcelCsv = `question,option1,option2,option3,option4,correct,explanation,deck,tags
+"HTMLでリンクを作成するタグはどれですか？","<link>","<a>","<href>","<url>",1,"<a>タグのhref属性にURLを指定することでリンクを作成できます。","Web基礎","HTML|基礎"
+"CSSでテキストの色を赤にするプロパティはどれですか？","background-color: red;","color: red;","text-color: red;","font-color: red;",1,"colorプロパティはテキストの色を指定するために使用します。","Web基礎","CSS|スタイル"`;
+
+                // BOM付きUTF-8でBlob作成
+                const bom = "\uFEFF";
+                const blob = new Blob([bom + sampleExcelCsv], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'sample-quiz-excel.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        new FileConverter();
+    </script>
+</Layout>

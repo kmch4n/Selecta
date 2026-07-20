@@ -1,0 +1,16 @@
+---
+export interface Props {
+    showConvertLink?: boolean;
+    showQuizLink?: boolean;
+}
+
+const { showConvertLink = false, showQuizLink = false } = Astro.props;
+---
+
+<nav class="app-nav" aria-label="メインナビゲーション">
+    <a href="/" class="app-nav__logo">Select<span>a</span></a>
+    <div class="app-nav__links">
+        {showQuizLink && <a href="/" class="app-nav__link">クイズに戻る</a>}
+        {showConvertLink && <a href="/convert" class="app-nav__link">変換ツール</a>}
+    </div>
+</nav>

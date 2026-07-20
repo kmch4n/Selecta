@@ -1,0 +1,754 @@
+/* ==========================================================================
+   Selecta design system — "Frost"
+   Shared DNA with SnowLog: pale canvas, deep ink, single vivid accent,
+   frosted glass surfaces, pill buttons, uppercase eyebrows.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Design tokens
+   -------------------------------------------------------------------------- */
+:root {
+    /* canvas & ink */
+    --paper: #ecf4fa;
+    --ink: #0b1720;
+    --sub: #526271;
+    --line: rgba(11, 23, 32, 0.10);
+
+    /* accent */
+    --accent: #0077c8;
+    --accent-deep: #0b4a7a;
+    --accent-soft: rgba(0, 119, 200, 0.12);
+    --on-accent: #ffffff;
+
+    /* semantics */
+    --ok: #2e9e63;
+    --ok-soft: rgba(46, 158, 99, 0.12);
+    --ng: #d6484f;
+    --ng-soft: rgba(214, 72, 79, 0.10);
+
+    /* surfaces */
+    --glass: rgba(255, 255, 255, 0.74);
+    --glass-strong: rgba(255, 255, 255, 0.88);
+    --glass-edge: rgba(255, 255, 255, 0.55);
+    --field: rgba(255, 255, 255, 0.85);
+    --track-empty: rgba(11, 23, 32, 0.12);
+    --shadow: 0 8px 32px rgba(10, 20, 40, 0.10);
+    --shadow-soft: 0 2px 12px rgba(10, 20, 40, 0.07);
+
+    /* type */
+    --font-sans: "Inter", "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI",
+        "Yu Gothic", Meiryo, system-ui, sans-serif;
+
+    /* motion — critically-damped feel */
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --t-press: 90ms;
+    --t-state: 200ms;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --paper: #0c151d;
+        --ink: #e8f0f7;
+        --sub: #8fa1b0;
+        --line: rgba(232, 240, 247, 0.12);
+
+        --accent: #3d9bdc;
+        --accent-deep: #7cc0ee;
+        --accent-soft: rgba(61, 155, 220, 0.16);
+        --on-accent: #06121b;
+
+        --ok: #46b87d;
+        --ok-soft: rgba(70, 184, 125, 0.14);
+        --ng: #e06a70;
+        --ng-soft: rgba(224, 106, 112, 0.13);
+
+        --glass: rgba(23, 36, 48, 0.66);
+        --glass-strong: rgba(28, 43, 57, 0.85);
+        --glass-edge: rgba(255, 255, 255, 0.08);
+        --field: rgba(15, 26, 36, 0.72);
+        --track-empty: rgba(232, 240, 247, 0.14);
+        --shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+        --shadow-soft: 0 2px 12px rgba(0, 0, 0, 0.25);
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Base
+   -------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    line-height: 1.65;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    /* subtle ice light falling from the top of the canvas */
+    background:
+        radial-gradient(120% 60% at 50% 0%, rgba(255, 255, 255, 0.55), transparent 70%),
+        var(--paper);
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background:
+            radial-gradient(120% 60% at 50% 0%, rgba(61, 155, 220, 0.08), transparent 70%),
+            var(--paper);
+    }
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+    margin: 0;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+
+::selection {
+    background: var(--accent-soft);
+}
+
+/* --------------------------------------------------------------------------
+   Layout shell
+   -------------------------------------------------------------------------- */
+.shell {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 28px 20px 64px;
+    flex: 1;
+}
+
+.shell--wide {
+    max-width: 860px;
+}
+
+/* --------------------------------------------------------------------------
+   Typography helpers
+   -------------------------------------------------------------------------- */
+.eyebrow {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--sub);
+}
+
+.display {
+    font-size: clamp(1.35rem, 3.5vw, 1.7rem);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.35;
+    text-wrap: balance;
+}
+
+.muted {
+    color: var(--sub);
+}
+
+.tnum {
+    font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   Frosted navbar
+   -------------------------------------------------------------------------- */
+.app-nav {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px clamp(16px, 4vw, 28px);
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    backdrop-filter: blur(16px) saturate(160%);
+    border-bottom: 1px solid var(--line);
+}
+
+.app-nav__logo {
+    font-size: 1.05rem;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+}
+
+.app-nav__logo:hover {
+    text-decoration: none;
+}
+
+.app-nav__logo span {
+    color: var(--accent);
+}
+
+.app-nav__links {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.app-nav__link {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--sub);
+    padding: 7px 14px;
+    border-radius: 999px;
+    transition: background var(--t-state) var(--ease-out), color var(--t-state) var(--ease-out);
+}
+
+.app-nav__link:hover {
+    color: var(--ink);
+    background: var(--accent-soft);
+    text-decoration: none;
+}
+
+/* --------------------------------------------------------------------------
+   Glass card
+   -------------------------------------------------------------------------- */
+.card-glass {
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--glass-edge);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: clamp(20px, 4vw, 30px);
+}
+
+/* --------------------------------------------------------------------------
+   Buttons — pill
+   -------------------------------------------------------------------------- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 999px;
+    padding: 10px 24px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    background: var(--accent);
+    color: var(--on-accent);
+    box-shadow: 0 2px 10px color-mix(in srgb, var(--accent) 35%, transparent);
+    transition: transform var(--t-press) ease-out, box-shadow var(--t-state) var(--ease-out),
+        background var(--t-state) var(--ease-out), opacity var(--t-state) var(--ease-out);
+}
+
+.btn:hover {
+    text-decoration: none;
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.btn:active {
+    transform: scale(0.97);
+}
+
+.btn:disabled {
+    opacity: 0.4;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.btn--ghost {
+    background: transparent;
+    color: var(--sub);
+    border: 1.5px solid var(--line);
+    box-shadow: none;
+}
+
+.btn--ghost:hover {
+    color: var(--ink);
+    border-color: var(--sub);
+    box-shadow: none;
+}
+
+.btn--ok {
+    background: var(--ok);
+    box-shadow: 0 2px 10px color-mix(in srgb, var(--ok) 35%, transparent);
+}
+
+.btn--ok:hover {
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--ok) 45%, transparent);
+}
+
+.btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+/* --------------------------------------------------------------------------
+   Segmented tabs
+   -------------------------------------------------------------------------- */
+.seg {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 999px;
+    background: var(--track-empty);
+    width: fit-content;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.seg__btn {
+    border-radius: 999px;
+    padding: 7px 18px;
+    font-size: 0.85rem;
+    font-weight: 650;
+    color: var(--sub);
+    white-space: nowrap;
+    transition: background var(--t-state) var(--ease-out), color var(--t-state) var(--ease-out),
+        box-shadow var(--t-state) var(--ease-out);
+}
+
+.seg__btn:active {
+    transform: scale(0.97);
+}
+
+.seg__btn.is-active {
+    background: var(--glass-strong);
+    color: var(--ink);
+    box-shadow: var(--shadow-soft);
+}
+
+/* --------------------------------------------------------------------------
+   Answer track — the signature
+   -------------------------------------------------------------------------- */
+.track {
+    display: flex;
+    gap: 4px;
+}
+
+.track__seg {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--track-empty);
+    transition: background var(--t-state) var(--ease-out), transform var(--t-state) var(--ease-out);
+}
+
+.track__seg.is-ok {
+    background: var(--accent);
+}
+
+.track__seg.is-ng {
+    background: var(--ng);
+    opacity: 0.6;
+}
+
+.track__seg.is-now {
+    background: var(--ink);
+    transform: scaleY(1.35);
+}
+
+.track--result .track__seg {
+    height: 10px;
+    border-radius: 5px;
+}
+
+/* --------------------------------------------------------------------------
+   Quiz header (eyebrow row above the track)
+   -------------------------------------------------------------------------- */
+.quiz-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.quiz-head .eyebrow {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   Option cards
+   -------------------------------------------------------------------------- */
+.opts {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.opt {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    text-align: left;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border: 1.5px solid var(--line);
+    font-weight: 550;
+    line-height: 1.5;
+    color: var(--ink);
+    box-shadow: var(--shadow-soft);
+    transition: transform var(--t-press) ease-out, border-color var(--t-state) var(--ease-out),
+        background var(--t-state) var(--ease-out), box-shadow var(--t-state) var(--ease-out),
+        opacity var(--t-state) var(--ease-out);
+}
+
+.opt:not(:disabled):hover {
+    border-color: var(--accent);
+}
+
+.opt:not(:disabled):active {
+    transform: scale(0.98);
+}
+
+.opt:disabled {
+    cursor: default;
+}
+
+.opt.is-selected {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.opt.is-ok {
+    border-color: var(--ok);
+    background: var(--ok-soft);
+    animation: opt-pop 260ms var(--ease-out);
+}
+
+.opt.is-ng {
+    border-color: var(--ng);
+    background: var(--ng-soft);
+}
+
+.opt.is-dim {
+    opacity: 0.55;
+}
+
+@keyframes opt-pop {
+    0% {
+        transform: scale(1);
+    }
+    45% {
+        transform: scale(1.015);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.opt__key {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    background: var(--track-empty);
+    color: var(--sub);
+    transition: background var(--t-state) var(--ease-out), color var(--t-state) var(--ease-out);
+}
+
+.opt.is-selected .opt__key {
+    background: var(--accent);
+    color: var(--on-accent);
+}
+
+.opt.is-ok .opt__key {
+    background: var(--ok);
+    color: #ffffff;
+}
+
+.opt.is-ng .opt__key {
+    background: var(--ng);
+    color: #ffffff;
+}
+
+.opt__mark {
+    margin-left: auto;
+    flex-shrink: 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.opt.is-ok .opt__mark {
+    color: var(--ok);
+}
+
+.opt.is-ng .opt__mark {
+    color: var(--ng);
+}
+
+/* --------------------------------------------------------------------------
+   Explanation / result panel
+   -------------------------------------------------------------------------- */
+.explain {
+    border-radius: 14px;
+    background: var(--accent-soft);
+    padding: 14px 18px;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--sub);
+}
+
+.explain b,
+.explain strong {
+    color: var(--ink);
+    font-weight: 700;
+}
+
+.explain .is-ok {
+    color: var(--ok);
+    font-weight: 700;
+}
+
+.explain .is-ng {
+    color: var(--ng);
+    font-weight: 700;
+}
+
+/* result screen */
+.score {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-variant-numeric: tabular-nums;
+}
+
+.score__big {
+    font-size: clamp(2.4rem, 8vw, 3.4rem);
+    font-weight: 750;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+}
+
+.score__total {
+    font-size: 1.1rem;
+    font-weight: 650;
+    color: var(--sub);
+}
+
+.result-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--sub);
+    font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   Forms
+   -------------------------------------------------------------------------- */
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.field + .field {
+    margin-top: 18px;
+}
+
+.label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.help {
+    font-size: 0.8rem;
+    color: var(--sub);
+}
+
+.input,
+.textarea {
+    width: 100%;
+    font: inherit;
+    font-size: 0.9rem;
+    color: var(--ink);
+    background: var(--field);
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 14px;
+    transition: border-color var(--t-state) var(--ease-out);
+}
+
+.input:focus,
+.textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+    color: var(--sub);
+    opacity: 0.7;
+}
+
+.textarea {
+    resize: vertical;
+    min-height: 96px;
+    line-height: 1.6;
+}
+
+.textarea--code {
+    font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+    font-size: 0.8rem;
+}
+
+/* hidden native file input + pill trigger */
+.file-btn input[type="file"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.file-btn {
+    position: relative;
+}
+
+.file-btn__name {
+    font-size: 0.85rem;
+    color: var(--sub);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+code {
+    display: inline-block;
+    font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+    font-size: 0.78rem;
+    background: var(--track-empty);
+    border-radius: 8px;
+    padding: 3px 10px;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+}
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+.app-footer {
+    border-top: 1px solid var(--line);
+    padding: 28px clamp(16px, 4vw, 28px) 40px;
+    font-size: 0.82rem;
+    color: var(--sub);
+}
+
+.app-footer__inner {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.app-footer__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 22px;
+}
+
+.app-footer__links a {
+    color: var(--sub);
+    font-weight: 600;
+}
+
+.app-footer__links a:hover {
+    color: var(--accent);
+}
+
+/* --------------------------------------------------------------------------
+   Utilities
+   -------------------------------------------------------------------------- */
+.stack-lg > * + * {
+    margin-top: 22px;
+}
+
+.stack-md > * + * {
+    margin-top: 14px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   Accessibility preferences
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+    .app-nav,
+    .card-glass,
+    .opt {
+        background: var(--glass-strong);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+}
+
+@media (prefers-contrast: more) {
+    .card-glass,
+    .opt {
+        border-color: var(--sub);
+    }
+}

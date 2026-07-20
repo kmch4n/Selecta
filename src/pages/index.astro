@@ -1,0 +1,569 @@
+---
+import Layout from '../components/Layout.astro';
+import NavBar from '../components/NavBar.astro';
+---
+
+<Layout title="Selecta">
+    <NavBar showConvertLink={true} />
+
+    <main class="shell">
+        <section id="file-input-section" class="stack-lg">
+            <div class="stack-md">
+                <p class="eyebrow">Start</p>
+                <h2 class="display">クイズを読み込む</h2>
+                <p class="muted">JSON形式のクイズファイルを選ぶか、URLを指定してください。</p>
+            </div>
+
+            <div class="card-glass stack-lg">
+                <div class="seg" role="tablist" aria-label="読み込み方法">
+                    <button type="button" class="seg__btn is-active" data-source="file" role="tab" aria-selected="true">
+                        ファイル選択
+                    </button>
+                    <button type="button" class="seg__btn" data-source="url" role="tab" aria-selected="false">
+                        URL指定
+                    </button>
+                </div>
+
+                <div id="file-source" class="source-content">
+                    <label class="file-btn">
+                        <input type="file" accept=".json" id="quiz-file" />
+                        <span class="btn">JSONファイルを選択</span>
+                    </label>
+                </div>
+
+                <div id="url-source" class="source-content" style="display: none;">
+                    <div class="field">
+                        <label class="label" for="quiz-urls">クイズファイルのURL（複数可、改行区切り）</label>
+                        <textarea
+                            class="textarea"
+                            id="quiz-urls"
+                            placeholder="https://example.com/quiz1.json&#10;https://example.com/quiz2.json"
+                            rows="4"></textarea>
+                        <p class="help">複数のURLを指定すると、順番に連続してクイズが実行されます。</p>
+                    </div>
+                    <div class="field">
+                        <button type="button" class="btn" id="load-urls-btn">URLからクイズを読み込み</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="quiz-section" style="display: none;">
+            <div class="quiz-head">
+                <span class="eyebrow" id="quiz-title"></span>
+                <span class="eyebrow tnum" id="question-counter"></span>
+            </div>
+            <div class="track" id="answer-track" aria-hidden="true"></div>
+
+            <div class="card-glass stack-lg" style="margin-top: 22px;">
+                <h2 class="display" id="question-text"></h2>
+                <div id="options-container" class="opts"></div>
+
+                <div id="result-section" class="explain" style="display: none;">
+                    <div id="result-text"></div>
+                </div>
+
+                <div class="btn-row" id="quiz-buttons">
+                    <button type="button" id="prev-btn" class="btn btn--ghost" disabled>前の問題</button>
+                    <button type="button" id="next-btn" class="btn" disabled>次の問題</button>
+                    <button type="button" id="restart-btn" class="btn btn--ghost">やり直し</button>
+                    <button type="button" id="new-quiz-btn" class="btn btn--ghost" style="display: none;">
+                        別のクイズを読み込む
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        interface QuizData {
+            meta: {
+                title: string;
+                description?: string;
+                version?: string;
+                created?: string;
+            };
+            questions: Array<{
+                id: string;
+                question: string;
+                options: string[];
+                correct: number;
+                explanation?: string;
+                deck?: string;
+                tags?: string[];
+                difficulty?: string;
+            }>;
+        }
+
+        class QuizApp {
+            private quizData: QuizData | null = null;
+            private currentQuestionIndex = 0;
+            private userAnswers: (number | null)[] = [];
+            private isAnswered = false;
+            private selectedOption = -1;
+            private isConfirmed = false;
+            private quizQueue: QuizData[] = [];
+            private currentQuizIndex = 0;
+            private allResults: Array<{title: string; correct: number; total: number}> = [];
+
+            constructor() {
+                this.setupEventListeners();
+            }
+
+            private setupEventListeners() {
+                const fileInput = document.getElementById('quiz-file') as HTMLInputElement;
+                const prevBtn = document.getElementById('prev-btn') as HTMLButtonElement;
+                const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
+                const restartBtn = document.getElementById('restart-btn') as HTMLButtonElement;
+                const newQuizBtn = document.getElementById('new-quiz-btn') as HTMLButtonElement;
+                const loadUrlsBtn = document.getElementById('load-urls-btn') as HTMLButtonElement;
+
+                fileInput.addEventListener('change', (e) => this.handleFileLoad(e));
+                prevBtn.addEventListener('click', () => this.previousQuestion());
+                nextBtn.addEventListener('click', () => this.nextQuestion());
+                restartBtn.addEventListener('click', () => this.restart());
+                newQuizBtn.addEventListener('click', () => this.loadNewQuiz());
+                loadUrlsBtn.addEventListener('click', () => this.handleUrlLoad());
+
+                // タブ切り替え
+                document.querySelectorAll('[data-source]').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.switchSourceTab((e.currentTarget as HTMLElement).dataset.source!);
+                    });
+                });
+
+                // キーボードイベント
+                document.addEventListener('keydown', (e) => this.handleKeydown(e));
+            }
+
+            private switchSourceTab(source: string) {
+                // タブの状態更新
+                document.querySelectorAll('[data-source]').forEach(tab => {
+                    tab.classList.remove('is-active');
+                    tab.setAttribute('aria-selected', 'false');
+                });
+                const activeTab = document.querySelector(`[data-source="${source}"]`)!;
+                activeTab.classList.add('is-active');
+                activeTab.setAttribute('aria-selected', 'true');
+
+                // コンテンツの表示切り替え
+                document.querySelectorAll('.source-content').forEach(content => {
+                    (content as HTMLElement).style.display = 'none';
+                });
+                document.getElementById(`${source}-source`)!.style.display = '';
+            }
+
+            private async handleUrlLoad() {
+                const textarea = document.getElementById('quiz-urls') as HTMLTextAreaElement;
+                const urls = textarea.value.split('\n').map(url => url.trim()).filter(url => url);
+
+                if (urls.length === 0) {
+                    alert('URLを入力してください');
+                    return;
+                }
+
+                try {
+                    this.quizQueue = [];
+                    for (const url of urls) {
+                        const response = await fetch(url);
+                        if (!response.ok) {
+                            throw new Error(`Failed to load ${url}: ${response.statusText}`);
+                        }
+                        const quizData = await response.json();
+                        this.quizQueue.push(quizData);
+                    }
+
+                    this.currentQuizIndex = 0;
+                    this.allResults = [];
+                    this.startQuizFromQueue();
+                } catch (error) {
+                    alert('URLからの読み込みに失敗しました: ' + error);
+                    console.error(error);
+                }
+            }
+
+            private startQuizFromQueue() {
+                if (this.currentQuizIndex < this.quizQueue.length) {
+                    this.quizData = this.quizQueue[this.currentQuizIndex];
+                    this.userAnswers = new Array(this.quizData.questions.length).fill(null);
+                    this.startQuiz();
+                }
+            }
+
+            private loadNewQuiz() {
+                document.getElementById('quiz-section')!.style.display = 'none';
+                document.getElementById('file-input-section')!.style.display = '';
+                document.getElementById('result-section')!.style.display = 'none';
+
+                // 状態をリセット
+                this.quizData = null;
+                this.quizQueue = [];
+                this.currentQuizIndex = 0;
+                this.allResults = [];
+            }
+
+            private handleKeydown(event: KeyboardEvent) {
+                // クイズが開始されていない場合は無効
+                if (!this.quizData || document.getElementById('quiz-section')!.style.display === 'none') {
+                    return;
+                }
+
+                // 1-4キーでオプション選択
+                if (event.key >= '1' && event.key <= '4') {
+                    event.preventDefault();
+                    const optionIndex = parseInt(event.key) - 1;
+
+                    // 既に回答が確定済みの場合は無効
+                    if (this.isConfirmed) return;
+
+                    this.selectedOption = optionIndex;
+                    this.highlightSelectedOption();
+                }
+
+                // Enterキーで確定 or 次の問題へ
+                else if (event.key === 'Enter') {
+                    event.preventDefault();
+
+                    if (!this.isConfirmed && this.selectedOption >= 0) {
+                        // 答案確定
+                        this.confirmAnswer();
+                    } else if (this.isConfirmed) {
+                        // 次の問題 or 次のクイズへ
+                        const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
+                        if (nextBtn.textContent === '次のクイズへ') {
+                            this.proceedToNextQuiz();
+                        } else {
+                            this.nextQuestion();
+                        }
+                    }
+                }
+            }
+
+            private async handleFileLoad(event: Event) {
+                const file = (event.target as HTMLInputElement).files?.[0];
+                if (!file) return;
+
+                try {
+                    const text = await file.text();
+                    this.quizData = JSON.parse(text);
+                    this.userAnswers = new Array(this.quizData!.questions.length).fill(null);
+                    this.startQuiz();
+                } catch (error) {
+                    alert('ファイルの読み込みに失敗しました。正しいJSONファイルを選択してください。');
+                    console.error(error);
+                }
+            }
+
+            private startQuiz() {
+                if (!this.quizData) return;
+
+                document.getElementById('file-input-section')!.style.display = 'none';
+                document.getElementById('quiz-section')!.style.display = '';
+                document.getElementById('result-section')!.style.display = 'none';
+
+                // 表示要素をリセット
+                document.getElementById('options-container')!.style.display = '';
+                document.getElementById('question-text')!.style.display = '';
+                document.getElementById('prev-btn')!.style.display = '';
+                document.getElementById('next-btn')!.style.display = '';
+                document.getElementById('next-btn')!.textContent = '次の問題';
+                document.getElementById('new-quiz-btn')!.style.display = 'none';
+
+                const quizTitle = this.quizQueue.length > 1
+                    ? `${this.quizData.meta.title} (${this.currentQuizIndex + 1}/${this.quizQueue.length})`
+                    : this.quizData.meta.title;
+                document.getElementById('quiz-title')!.textContent = quizTitle;
+
+                this.currentQuestionIndex = 0;
+                this.displayQuestion();
+            }
+
+            private renderTrack(final = false) {
+                if (!this.quizData) return;
+
+                const track = document.getElementById('answer-track')!;
+                track.className = final ? 'track track--result' : 'track';
+                track.innerHTML = '';
+
+                this.quizData.questions.forEach((question, index) => {
+                    const seg = document.createElement('span');
+                    seg.className = 'track__seg';
+
+                    const answer = this.userAnswers[index];
+                    if (answer !== null) {
+                        seg.classList.add(answer === question.correct ? 'is-ok' : 'is-ng');
+                    }
+                    if (!final && index === this.currentQuestionIndex) {
+                        seg.classList.add('is-now');
+                    }
+                    track.appendChild(seg);
+                });
+            }
+
+            private displayQuestion() {
+                if (!this.quizData) return;
+
+                const question = this.quizData.questions[this.currentQuestionIndex];
+                const questionText = document.getElementById('question-text')!;
+                const optionsContainer = document.getElementById('options-container')!;
+                const questionCounter = document.getElementById('question-counter')!;
+                const prevBtn = document.getElementById('prev-btn') as HTMLButtonElement;
+                const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
+
+                // 状態をリセット
+                this.selectedOption = this.userAnswers[this.currentQuestionIndex] ?? -1;
+                this.isConfirmed = this.userAnswers[this.currentQuestionIndex] !== null;
+
+                questionText.textContent = question.question;
+                questionCounter.textContent = `Q ${this.currentQuestionIndex + 1} / ${this.quizData.questions.length}`;
+
+                this.renderTrack();
+
+                optionsContainer.innerHTML = '';
+                question.options.forEach((option, index) => {
+                    const hasAnswered = this.userAnswers[this.currentQuestionIndex] !== null;
+
+                    const optBtn = document.createElement('button');
+                    optBtn.type = 'button';
+                    optBtn.className = 'opt';
+                    optBtn.disabled = hasAnswered;
+
+                    const key = document.createElement('span');
+                    key.className = 'opt__key';
+                    key.textContent = `${index + 1}`;
+
+                    const text = document.createElement('span');
+                    text.className = 'opt__text';
+                    text.textContent = option;
+
+                    const mark = document.createElement('span');
+                    mark.className = 'opt__mark';
+
+                    optBtn.appendChild(key);
+                    optBtn.appendChild(text);
+                    optBtn.appendChild(mark);
+
+                    optBtn.addEventListener('click', () => {
+                        if (this.isConfirmed) return; // 回答確定済みの場合はクリック無効
+
+                        this.selectedOption = index;
+                        this.confirmAnswer();
+                    });
+
+                    optionsContainer.appendChild(optBtn);
+                });
+
+                prevBtn.disabled = this.currentQuestionIndex === 0;
+                nextBtn.disabled = this.userAnswers[this.currentQuestionIndex] === null;
+
+                if (this.userAnswers[this.currentQuestionIndex] !== null) {
+                    const selectedAnswer = this.userAnswers[this.currentQuestionIndex];
+                    this.showExplanation(selectedAnswer === question.correct);
+                    this.updateOptionStates();
+                } else {
+                    document.getElementById('result-section')!.style.display = 'none';
+                }
+            }
+
+            private highlightSelectedOption() {
+                const options = document.querySelectorAll('#options-container .opt');
+
+                options.forEach((option, index) => {
+                    option.classList.toggle('is-selected', index === this.selectedOption);
+                });
+            }
+
+            private confirmAnswer() {
+                if (!this.quizData || this.selectedOption < 0) return;
+
+                this.userAnswers[this.currentQuestionIndex] = this.selectedOption;
+                this.isConfirmed = true;
+                this.isAnswered = true;
+
+                const question = this.quizData.questions[this.currentQuestionIndex];
+                const isCorrect = this.selectedOption === question.correct;
+
+                this.showExplanation(isCorrect);
+                this.updateOptionStates();
+                this.renderTrack();
+
+                const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
+                nextBtn.disabled = false;
+            }
+
+            private updateOptionStates() {
+                if (!this.quizData) return;
+
+                const question = this.quizData.questions[this.currentQuestionIndex];
+                const selectedAnswer = this.userAnswers[this.currentQuestionIndex];
+                const options = document.querySelectorAll('#options-container .opt');
+
+                options.forEach((option, index) => {
+                    const isSelected = selectedAnswer === index;
+                    const isCorrect = index === question.correct;
+                    const mark = option.querySelector('.opt__mark')!;
+
+                    option.classList.remove('is-selected', 'is-ok', 'is-ng', 'is-dim');
+                    (option as HTMLButtonElement).disabled = true;
+                    mark.textContent = '';
+
+                    if (isCorrect) {
+                        option.classList.add('is-ok');
+                        mark.textContent = '正解';
+                    } else if (isSelected) {
+                        option.classList.add('is-ng');
+                        mark.textContent = 'あなたの解答';
+                    } else {
+                        option.classList.add('is-dim');
+                    }
+                });
+            }
+
+            private esc(text: string): string {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            private showExplanation(isCorrect: boolean) {
+                if (!this.quizData) return;
+
+                const question = this.quizData.questions[this.currentQuestionIndex];
+                const resultSection = document.getElementById('result-section')!;
+                const resultText = document.getElementById('result-text')!;
+
+                resultSection.style.display = '';
+
+                const correctAnswer = question.options[question.correct];
+                const resultHtml = `
+                    <p><span class="${isCorrect ? 'is-ok' : 'is-ng'}">${isCorrect ? '正解' : '不正解'}</span></p>
+                    <p><strong>正解:</strong> ${this.esc(correctAnswer)}</p>
+                    ${question.explanation ? `<p><strong>解説:</strong> ${this.esc(question.explanation)}</p>` : ''}
+                `;
+
+                resultText.innerHTML = resultHtml;
+            }
+
+            private previousQuestion() {
+                if (this.currentQuestionIndex > 0) {
+                    this.currentQuestionIndex--;
+                    this.displayQuestion();
+                }
+            }
+
+            private nextQuestion() {
+                if (this.currentQuestionIndex < this.quizData!.questions.length - 1) {
+                    this.currentQuestionIndex++;
+                    this.displayQuestion();
+                } else {
+                    // クイズ終了時は必ずshowFinalResultsを呼ぶ
+                    this.showFinalResults();
+                }
+            }
+
+            private proceedToNextQuiz() {
+                if (this.currentQuizIndex + 1 < this.quizQueue.length) {
+                    this.currentQuizIndex++;
+                    this.startQuizFromQueue();
+                }
+            }
+
+            private showFinalResults() {
+                if (!this.quizData) return;
+
+                const correctCount = this.userAnswers.filter((answer, index) =>
+                    answer === this.quizData!.questions[index].correct
+                ).length;
+
+                const totalQuestions = this.quizData.questions.length;
+                const percentage = Math.round((correctCount / totalQuestions) * 100);
+
+                // 現在のクイズ結果を記録
+                this.allResults.push({
+                    title: this.quizData.meta.title,
+                    correct: correctCount,
+                    total: totalQuestions
+                });
+
+                // 選択肢と問題文を非表示にし、結果のみ表示
+                document.getElementById('options-container')!.style.display = 'none';
+                document.getElementById('question-text')!.style.display = 'none';
+
+                // トラックを結果表示モードへ
+                this.renderTrack(true);
+
+                let resultHtml = `
+                    <p class="eyebrow">Result — ${this.esc(this.quizData.meta.title)}</p>
+                    <div class="score">
+                        <span class="score__big">${correctCount}</span>
+                        <span class="score__total">/ ${totalQuestions} 問正解</span>
+                    </div>
+                    <p class="tnum">正答率 ${percentage}%</p>`;
+
+                // 次のクイズがある場合の処理
+                if (this.currentQuizIndex + 1 < this.quizQueue.length) {
+                    resultHtml += `<p style="margin-top: 12px;">次のクイズに進みますか？</p>`;
+                    document.getElementById('next-btn')!.textContent = '次のクイズへ';
+                    (document.getElementById('next-btn') as HTMLButtonElement).disabled = false;
+
+                    // 次のクイズボタンのイベントリスナーを更新
+                    const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
+                    nextBtn.replaceWith(nextBtn.cloneNode(true));
+                    const newNextBtn = document.getElementById('next-btn') as HTMLButtonElement;
+                    newNextBtn.addEventListener('click', () => this.proceedToNextQuiz());
+                } else if (this.quizQueue.length > 1) {
+                    // 全クイズ完了時の総合結果
+                    const totalCorrect = this.allResults.reduce((sum, result) => sum + result.correct, 0);
+                    const grandTotal = this.allResults.reduce((sum, result) => sum + result.total, 0);
+                    const overallPercentage = Math.round((totalCorrect / grandTotal) * 100);
+
+                    resultHtml += `<div style="margin-top: 20px;">
+                        <p class="eyebrow">Overall</p>
+                        <div class="score">
+                            <span class="score__big">${totalCorrect}</span>
+                            <span class="score__total">/ ${grandTotal} 問正解</span>
+                        </div>
+                        <p class="tnum">総合正答率 ${overallPercentage}%</p>
+                        <div class="result-list" style="margin-top: 12px;">`;
+
+                    this.allResults.forEach(result => {
+                        const percent = Math.round((result.correct / result.total) * 100);
+                        resultHtml += `<p>${this.esc(result.title)}: ${result.correct}/${result.total}（${percent}%）</p>`;
+                    });
+
+                    resultHtml += `</div></div>`;
+                    document.getElementById('next-btn')!.style.display = 'none';
+                } else {
+                    document.getElementById('next-btn')!.style.display = 'none';
+                }
+
+                const resultText = document.getElementById('result-text')!;
+                resultText.innerHTML = resultHtml;
+                document.getElementById('result-section')!.style.display = '';
+
+                // ボタンの表示制御
+                document.getElementById('new-quiz-btn')!.style.display = '';
+                document.getElementById('prev-btn')!.style.display = 'none';
+            }
+
+            private restart() {
+                this.currentQuestionIndex = 0;
+                this.userAnswers = new Array(this.quizData!.questions.length).fill(null);
+                this.isAnswered = false;
+                this.selectedOption = -1;
+                this.isConfirmed = false;
+                document.getElementById('result-section')!.style.display = 'none';
+                document.getElementById('options-container')!.style.display = '';
+                document.getElementById('question-text')!.style.display = '';
+                document.getElementById('new-quiz-btn')!.style.display = 'none';
+                document.getElementById('next-btn')!.style.display = '';
+                document.getElementById('next-btn')!.textContent = '次の問題';
+                document.getElementById('prev-btn')!.style.display = '';
+                this.displayQuestion();
+            }
+        }
+
+        new QuizApp();
+    </script>
+</Layout>
