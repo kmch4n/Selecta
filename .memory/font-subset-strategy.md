@@ -25,7 +25,7 @@ Workbox の precache は**遅延しない**。`unicode-range` はブラウザの
 さらに Workbox の `maximumFileSizeToCacheInBytes` は既定 2MiB で、
 **超えたファイルはエラーを出さず黙って捨てられる**。「設定したのに効かない」がここで起きる。
 
-ただし現状 [[pwa-never-registers]] のため、この runtimeCaching はまだ動作していない。
+この runtimeCaching が動くには SW の登録が要る — [[pwa-registration-wiring]] を参照。
 
 ## フォントが効いているかの確認方法
 

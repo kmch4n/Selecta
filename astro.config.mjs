@@ -6,6 +6,14 @@ import AstroPWA from '@vite-pwa/astro';
 export default defineConfig({
     integrations: [AstroPWA({
         registerType: 'autoUpdate',
+        // Must be explicit. vite-plugin-pwa's default ('auto') injects the
+        // registration through Vite's transformIndexHtml hook, which never fires
+        // for Astro pages because Astro emits their HTML itself — so nothing was
+        // ever injected and the service worker never registered. On top of that,
+        // 'auto' deliberately withholds pwaInfo.registerSW once a virtual module
+        // is imported, which would leave the manual wiring in Layout.astro with
+        // nothing to render. 'script' both fixes the default and populates it.
+        injectRegister: 'script',
         workbox: {
             // Fonts are deliberately excluded from the precache manifest.
             // Zen Maru Gothic ships its Japanese coverage as 122 unicode-range

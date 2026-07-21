@@ -6,6 +6,13 @@ export interface Props {
 const { title } = Astro.props;
 import Footer from './Footer.astro';
 
+// The PWA integration generates sw.js, registerSW.js, and the web manifest, but
+// it cannot inject them into Astro pages: it relies on Vite's transformIndexHtml
+// hook, which never fires for HTML that Astro emits itself. Without the two
+// set:html fragments below, the service worker is built and then never
+// registered — which is exactly what was happening.
+import { pwaInfo } from 'virtual:pwa-info';
+
 // Self-hosted so the PWA keeps working offline and no request leaves the origin.
 // These are the chunked entry points: each pulls a stylesheet of unicode-range
 // @font-face rules, so the browser downloads only the ranges a page actually
@@ -36,9 +43,14 @@ import '../styles/main.css';
         <meta property="og:title" content={title} />
         <meta property="og:description" content="4択クイズアプリ（Anki互換）" />
         <meta name="twitter:card" content="summary" />
+        {/* pwaInfo is undefined on the dev server, where the PWA is off on
+            purpose — a service worker caching between edits costs more than it
+            gives. Both fragments are guarded so dev renders without them. */}
+        {pwaInfo && <Fragment set:html={pwaInfo.webManifest.linkTag} />}
     </head>
     <body>
         <slot />
         <Footer />
+        {pwaInfo?.registerSW && <Fragment set:html={pwaInfo.registerSW.scriptTag} />}
     </body>
 </html>
