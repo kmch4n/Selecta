@@ -7,27 +7,35 @@ import NavBar from '../components/NavBar.astro';
     <NavBar showConvertLink={true} />
 
     <main class="shell">
-        <section id="file-input-section" class="stack-lg">
-            <div class="stack-md">
-                <p class="eyebrow">Start</p>
-                <h2 class="display">クイズを読み込む</h2>
-                <p class="muted">JSON形式のクイズファイルを選ぶか、URLを指定してください。</p>
+        <section id="file-input-section">
+            <div class="hero">
+                <h1 class="hero__title">4択クイズを、<span class="hl">手元のファイル</span>から。</h1>
+                <p class="hero__lede">
+                    読み込みも採点もブラウザの中だけで完結します。ファイルはどこにも送られません。
+                </p>
+                <div class="hero__act">
+                    <button type="button" class="btn btn--lg" id="load-sample-btn">サンプルで試す</button>
+                    <p class="help">一般常識10問。そのまま始まります。</p>
+                </div>
             </div>
 
-            <div class="card-glass stack-lg">
-                <div class="seg" role="tablist" aria-label="読み込み方法">
-                    <button type="button" class="seg__btn is-active" data-source="file" role="tab" aria-selected="true">
-                        ファイル選択
-                    </button>
-                    <button type="button" class="seg__btn" data-source="url" role="tab" aria-selected="false">
-                        URL指定
-                    </button>
+            <div class="card">
+                <div class="loader__head">
+                    <h2 class="loader__title">自分のクイズを読み込む</h2>
+                    <div class="seg" role="tablist" aria-label="読み込み方法">
+                        <button type="button" class="seg__btn is-active" data-source="file" role="tab" aria-selected="true">
+                            ファイル
+                        </button>
+                        <button type="button" class="seg__btn" data-source="url" role="tab" aria-selected="false">
+                            URL
+                        </button>
+                    </div>
                 </div>
 
                 <div id="file-source" class="source-content">
                     <label class="file-btn">
                         <input type="file" accept=".json" id="quiz-file" />
-                        <span class="btn">JSONファイルを選択</span>
+                        <span class="btn btn--soft">JSONを選ぶ</span>
                     </label>
                 </div>
 
@@ -39,41 +47,37 @@ import NavBar from '../components/NavBar.astro';
                             id="quiz-urls"
                             placeholder="https://example.com/quiz1.json&#10;https://example.com/quiz2.json"
                             rows="4"></textarea>
-                        <p class="help">複数のURLを指定すると、順番に連続してクイズが実行されます。</p>
+                        <p class="help">複数指定すると、順番に連続して出題されます。</p>
                     </div>
                     <div class="field">
-                        <button type="button" class="btn" id="load-urls-btn">URLからクイズを読み込み</button>
+                        <button type="button" class="btn btn--soft" id="load-urls-btn">読み込む</button>
                     </div>
-                </div>
-
-                <div class="sample-row">
-                    <p class="help">はじめてなら、同梱のサンプル（一般常識10問）で試せます。</p>
-                    <button type="button" class="btn btn--ghost" id="load-sample-btn">サンプルで試す</button>
                 </div>
             </div>
         </section>
 
         <section id="quiz-section" style="display: none;">
-            <div class="quiz-head">
-                <span class="eyebrow" id="quiz-title"></span>
-                <span class="eyebrow tnum" id="question-counter"></span>
+            <div class="quiz__meta">
+                <span class="label-mono quiz__title" id="quiz-title"></span>
+                <span class="label-mono" id="question-counter"></span>
             </div>
             <div class="track" id="answer-track" aria-hidden="true"></div>
 
-            <div class="card-glass stack-lg" style="margin-top: 22px;">
-                <h2 class="display" id="question-text"></h2>
+            <h2 class="quiz__q" id="question-text"></h2>
+
+            <div class="stack-lg">
                 <div id="options-container" class="opts"></div>
 
-                <div id="result-section" class="explain" style="display: none;">
+                <div id="result-section" class="verdict" style="display: none;">
                     <div id="result-text"></div>
                 </div>
 
                 <div class="btn-row" id="quiz-buttons">
-                    <button type="button" id="prev-btn" class="btn btn--ghost" disabled>前の問題</button>
-                    <button type="button" id="next-btn" class="btn" disabled>次の問題</button>
-                    <button type="button" id="restart-btn" class="btn btn--ghost">やり直し</button>
-                    <button type="button" id="new-quiz-btn" class="btn btn--ghost" style="display: none;">
-                        別のクイズを読み込む
+                    <button type="button" id="prev-btn" class="btn btn--outline" disabled>前へ</button>
+                    <button type="button" id="next-btn" class="btn" data-mode="question" disabled>次へ</button>
+                    <button type="button" id="restart-btn" class="btn btn--outline">やり直す</button>
+                    <button type="button" id="new-quiz-btn" class="btn btn--outline" style="display: none;">
+                        別のクイズ
                     </button>
                 </div>
             </div>
@@ -246,7 +250,7 @@ import NavBar from '../components/NavBar.astro';
                     } else if (this.isConfirmed) {
                         // 次の問題 or 次のクイズへ
                         const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
-                        if (nextBtn.textContent === '次のクイズへ') {
+                        if (nextBtn.dataset.mode === 'quiz') {
                             this.proceedToNextQuiz();
                         } else {
                             this.nextQuestion();
@@ -270,6 +274,17 @@ import NavBar from '../components/NavBar.astro';
                 }
             }
 
+            /**
+             * 「次へ」ボタンのラベルと役割を必ず一組で設定する。
+             * キーボード経路（Enter）はラベル文字列ではなく data-mode を見るため、
+             * 表示文言を変えても分岐が壊れない。
+             */
+            private setNextMode(mode: 'question' | 'quiz', label: string) {
+                const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
+                nextBtn.dataset.mode = mode;
+                nextBtn.textContent = label;
+            }
+
             private startQuiz() {
                 if (!this.quizData) return;
 
@@ -282,7 +297,7 @@ import NavBar from '../components/NavBar.astro';
                 document.getElementById('question-text')!.style.display = '';
                 document.getElementById('prev-btn')!.style.display = '';
                 document.getElementById('next-btn')!.style.display = '';
-                document.getElementById('next-btn')!.textContent = '次の問題';
+                this.setNextMode('question', '次の問題');
                 document.getElementById('new-quiz-btn')!.style.display = 'none';
 
                 const quizTitle = this.quizQueue.length > 1
@@ -403,6 +418,13 @@ import NavBar from '../components/NavBar.astro';
                 this.updateOptionStates();
                 this.renderTrack();
 
+                if (isCorrect) {
+                    const chosen = document.querySelectorAll<HTMLElement>('#options-container .opt')[
+                        this.selectedOption
+                    ];
+                    if (chosen) this.burst(chosen.querySelector<HTMLElement>('.opt__key') ?? chosen);
+                }
+
                 const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
                 nextBtn.disabled = false;
             }
@@ -432,6 +454,70 @@ import NavBar from '../components/NavBar.astro';
                     } else {
                         option.classList.add('is-dim');
                     }
+                });
+            }
+
+            private prefersReducedMotion(): boolean {
+                return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            }
+
+            /**
+             * 正解したときだけ一度だけ弾ける。色は pear（アクセント）で、
+             * coral は誤答の色として予約済みなので祝福には使わない。
+             */
+            private burst(anchor: HTMLElement) {
+                if (this.prefersReducedMotion()) return;
+
+                const rect = anchor.getBoundingClientRect();
+                const star = document.createElement('span');
+                star.className = 'star-burst';
+                star.style.left = `${rect.left + rect.width / 2 - 12 + window.scrollX}px`;
+                star.style.top = `${rect.top + rect.height / 2 - 12 + window.scrollY}px`;
+                star.addEventListener('animationend', () => star.remove());
+                document.body.appendChild(star);
+            }
+
+            /**
+             * スコアを 0 から実数値へ回す。reduced-motion では即座に最終値を出す。
+             * 「止める」のではないことが重要 — 0 のまま固まるとスコアの誤表示になる。
+             */
+            private tickUp(el: HTMLElement, target: number) {
+                const land = () => {
+                    el.textContent = String(target);
+                    el.classList.add('is-landed');
+                };
+
+                if (this.prefersReducedMotion()) {
+                    land();
+                    return;
+                }
+
+                const duration = 1200;
+
+                // The score is information, not decoration, so it must arrive at
+                // its real value even if the animation never runs. requestAnimation-
+                // Frame is suspended while the tab is hidden, so a user who looks
+                // away on the last question would otherwise come back to a 0.
+                const safety = window.setTimeout(land, duration + 400);
+
+                const started = performance.now();
+                const step = (now: number) => {
+                    const p = Math.min((now - started) / duration, 1);
+                    const eased = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);
+                    el.textContent = String(Math.round(eased * target));
+                    if (p < 1) {
+                        requestAnimationFrame(step);
+                    } else {
+                        window.clearTimeout(safety);
+                        land();
+                    }
+                };
+                requestAnimationFrame(step);
+            }
+
+            private startCounters(scope: HTMLElement) {
+                scope.querySelectorAll<HTMLElement>('.counter__num[data-count]').forEach(el => {
+                    this.tickUp(el, Number(el.dataset.count ?? 0));
                 });
             }
 
@@ -509,17 +595,16 @@ import NavBar from '../components/NavBar.astro';
                 this.renderTrack(true);
 
                 let resultHtml = `
-                    <p class="eyebrow">Result — ${this.esc(this.quizData.meta.title)}</p>
-                    <div class="score">
-                        <span class="score__big">${correctCount}</span>
-                        <span class="score__total">/ ${totalQuestions} 問正解</span>
+                    <div class="counter">
+                        <span class="counter__num" data-count="${correctCount}">0</span>
+                        <span class="counter__of">/ ${totalQuestions} 問正解</span>
                     </div>
-                    <p class="tnum">正答率 ${percentage}%</p>`;
+                    <p>正答率 ${percentage}%</p>`;
 
                 // 次のクイズがある場合の処理
                 if (this.currentQuizIndex + 1 < this.quizQueue.length) {
                     resultHtml += `<p style="margin-top: 12px;">次のクイズに進みますか？</p>`;
-                    document.getElementById('next-btn')!.textContent = '次のクイズへ';
+                    this.setNextMode('quiz', '次のクイズへ');
                     (document.getElementById('next-btn') as HTMLButtonElement).disabled = false;
 
                     // 次のクイズボタンのイベントリスナーを更新
@@ -533,14 +618,14 @@ import NavBar from '../components/NavBar.astro';
                     const grandTotal = this.allResults.reduce((sum, result) => sum + result.total, 0);
                     const overallPercentage = Math.round((totalCorrect / grandTotal) * 100);
 
-                    resultHtml += `<div style="margin-top: 20px;">
-                        <p class="eyebrow">Overall</p>
-                        <div class="score">
-                            <span class="score__big">${totalCorrect}</span>
-                            <span class="score__total">/ ${grandTotal} 問正解</span>
+                    resultHtml += `<hr class="divider" />
+                        <h3>すべての結果</h3>
+                        <div class="counter">
+                            <span class="counter__num" data-count="${totalCorrect}">0</span>
+                            <span class="counter__of">/ ${grandTotal} 問正解</span>
                         </div>
-                        <p class="tnum">総合正答率 ${overallPercentage}%</p>
-                        <div class="result-list" style="margin-top: 12px;">`;
+                        <p>総合正答率 ${overallPercentage}%</p>
+                        <div class="result-list">`;
 
                     this.allResults.forEach(result => {
                         const percent = Math.round((result.correct / result.total) * 100);
@@ -556,6 +641,7 @@ import NavBar from '../components/NavBar.astro';
                 const resultText = document.getElementById('result-text')!;
                 resultText.innerHTML = resultHtml;
                 document.getElementById('result-section')!.style.display = '';
+                this.startCounters(resultText);
 
                 // ボタンの表示制御
                 document.getElementById('new-quiz-btn')!.style.display = '';
@@ -573,7 +659,7 @@ import NavBar from '../components/NavBar.astro';
                 document.getElementById('question-text')!.style.display = '';
                 document.getElementById('new-quiz-btn')!.style.display = 'none';
                 document.getElementById('next-btn')!.style.display = '';
-                document.getElementById('next-btn')!.textContent = '次の問題';
+                this.setNextMode('question', '次の問題');
                 document.getElementById('prev-btn')!.style.display = '';
                 this.displayQuestion();
             }

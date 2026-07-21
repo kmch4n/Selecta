@@ -1,0 +1,200 @@
+/* ==========================================================================
+   Selecta design tokens
+   The single source of literal values. Nothing outside this file may declare
+   a raw colour, a raw length, or a font-family — see design.md.
+
+   Theme: Hum (playful genre). Light is the theme as published; dark is a
+   Selecta-specific derivation, because the project contract requires both
+   and Hum ships no dark definition. The dark rules are annotated inline.
+   ========================================================================== */
+
+:root {
+    /* ----------------------------------------------------------------------
+       Colour — light
+       Cream paper pulled toward the pear hue (H 95). Never pure white: the
+       warmth is the theme. Ink is near-black with a cool tilt, never #000.
+       ---------------------------------------------------------------------- */
+    --color-paper: oklch(97% 0.012 95);
+    --color-paper-2: oklch(94% 0.016 95);
+    --color-paper-3: oklch(91% 0.020 95);
+
+    --color-ink: oklch(20% 0.012 250);
+    --color-ink-2: oklch(44% 0.010 250);
+    --color-rule: oklch(20% 0.012 250 / 0.14);
+
+    /* Accents. Each owns one kind of surface; they are never blended into a
+       gradient with each other. */
+    --color-accent: oklch(86% 0.18 95); /* pear — primary action, in-progress */
+    --color-accent-deep: oklch(70% 0.17 95); /* the button's thickness edge */
+    --color-accent-cast: oklch(76% 0.20 95 / 0.45); /* the button's ground shadow */
+    --color-accent-soft: oklch(86% 0.18 95 / 0.16);
+
+    --color-link: oklch(52% 0.15 235); /* cyan, darkened for text contrast */
+    --color-link-soft: oklch(66% 0.18 235 / 0.14);
+
+    /* Semantic pair. Reserved before any decorative use: mint always means a
+       right answer, coral always means a wrong one. The celebration burst is
+       pear precisely so it cannot collide with either. */
+    --color-ok: oklch(62% 0.15 150);
+    --color-ok-soft: oklch(80% 0.16 150 / 0.20);
+    --color-ng: oklch(58% 0.21 18);
+    --color-ng-soft: oklch(68% 0.24 18 / 0.14);
+
+    /* The fill versions above are tuned to read as colour on a large surface.
+       Small text needs more contrast than a 12px label gets from them, so the
+       ink versions are darkened to clear 4.5:1 on paper and paper-2. */
+    --color-ok-ink: oklch(48% 0.13 150);
+    --color-ng-ink: oklch(50% 0.19 18);
+
+    --color-focus: oklch(52% 0.15 235);
+    --color-on-accent: oklch(20% 0.012 250); /* ink on pear — pear is light */
+
+    /* Surfaces. Flat fills, no translucency: glassmorphism is banned. */
+    --color-surface: oklch(99% 0.008 95);
+    --color-field: oklch(99% 0.008 95);
+
+    --shadow-card: 0 1px 2px oklch(20% 0.012 250 / 0.06),
+        0 12px 32px -16px oklch(20% 0.012 250 / 0.14);
+    --shadow-card-hover: 0 2px 4px oklch(20% 0.012 250 / 0.07),
+        0 20px 44px -18px oklch(20% 0.012 250 / 0.20);
+    --shadow-hairline: 0 1px 2px oklch(20% 0.012 250 / 0.05);
+    --shadow-seg: 0 1px 3px oklch(20% 0.012 250 / 0.12);
+    --shadow-lift: 0 6px 14px -6px oklch(20% 0.012 250 / 0.22);
+    --cast-neutral: oklch(20% 0.012 250 / 0.18);
+
+    /* ----------------------------------------------------------------------
+       Type
+       Latin resolves to Plus Jakarta Sans; Japanese has no glyphs there and
+       falls through to Zen Maru Gothic. Both are rounded humanist sans, so
+       the fallthrough is by design, not an accident.
+       ---------------------------------------------------------------------- */
+    --font-display: "Plus Jakarta Sans", "Zen Maru Gothic", system-ui, sans-serif;
+    --font-body: "Plus Jakarta Sans", "Zen Maru Gothic", system-ui, sans-serif;
+    --font-label: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-md: 1.125rem;
+    --text-lg: 1.375rem;
+    --text-xl: 1.75rem;
+    --text-2xl: 2.25rem;
+    --text-3xl: clamp(2.25rem, 5vw + 1rem, 3.25rem);
+    --text-display: clamp(2.75rem, 7vw + 1rem, 4.5rem);
+    --text-counter: clamp(3.5rem, 9vw + 1rem, 6rem);
+
+    --tracking-display: -0.025em;
+    --tracking-label: 0.10em;
+
+    --leading-tight: 1.12;
+    --leading-snug: 1.35;
+    --leading-body: 1.7;
+
+    /* ----------------------------------------------------------------------
+       Space — 4 pt scale
+       ---------------------------------------------------------------------- */
+    --space-3xs: 0.25rem;
+    --space-2xs: 0.5rem;
+    --space-xs: 0.75rem;
+    --space-sm: 1rem;
+    --space-md: 1.5rem;
+    --space-lg: 2rem;
+    --space-xl: 3rem;
+    --space-2xl: 4.5rem;
+    --space-3xl: 7rem;
+
+    --page-max: 68rem;
+    --page-gutter: clamp(1rem, 4vw, 2rem);
+    --measure: 34rem;
+
+    /* ----------------------------------------------------------------------
+       Shape — Hum is the rounded theme. No square corners anywhere.
+       ---------------------------------------------------------------------- */
+    /* one base height so an input and the button beside it agree */
+    --control-h: 2.75rem;
+
+    --radius-card: 20px;
+    --radius-input: 12px;
+    --radius-chip: 10px;
+    --radius-pill: 999px;
+
+    /* ----------------------------------------------------------------------
+       Motion
+       ---------------------------------------------------------------------- */
+    --ease-press: cubic-bezier(0.2, 0.7, 0.3, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-snap: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+    --dur-press: 70ms;
+    --dur-short: 140ms;
+    --dur-mid: 220ms;
+    --dur-long: 600ms;
+
+    /* ----------------------------------------------------------------------
+       Layers
+       ---------------------------------------------------------------------- */
+    --z-base: 1;
+    --z-raised: 10;
+    --z-nav: 20;
+    --z-overlay: 30;
+}
+
+/* ==========================================================================
+   Colour — dark
+
+   Selecta-specific derivation of Hum. Three rules govern it:
+
+   1. The paper keeps the pear hue (H 95) and only drops in lightness. Going
+      neutral-grey here would strip out the warmth that makes Hum Hum.
+   2. Accents lose 6-8 points of lightness, and the palette narrows to pear
+      plus one. Five accents on a dark ground drifts into carnival, which the
+      theme bans outright.
+   3. The button's edge stays DARKER than its face. The edge reads against the
+      button, not against the page, and pear at 79% lightness is bright enough
+      that a darkened edge is plainly visible even here. A lighter edge would
+      light the button from below — that is shadow-glow, and it is banned.
+   ========================================================================== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-paper: oklch(20% 0.014 95);
+        --color-paper-2: oklch(24% 0.016 95);
+        --color-paper-3: oklch(28% 0.018 95);
+
+        --color-ink: oklch(94% 0.010 95);
+        --color-ink-2: oklch(70% 0.012 95);
+        --color-rule: oklch(94% 0.010 95 / 0.16);
+
+        --color-accent: oklch(79% 0.17 95);
+        --color-accent-deep: oklch(62% 0.15 95);
+        --color-accent-cast: oklch(62% 0.15 95 / 0.35);
+        --color-accent-soft: oklch(79% 0.17 95 / 0.18);
+
+        --color-link: oklch(76% 0.14 235);
+        --color-link-soft: oklch(76% 0.14 235 / 0.16);
+
+        --color-ok: oklch(76% 0.15 150);
+        --color-ok-soft: oklch(76% 0.15 150 / 0.18);
+        --color-ng: oklch(70% 0.19 18);
+        --color-ng-soft: oklch(70% 0.19 18 / 0.16);
+
+        /* on dark the ink versions go lighter, not darker */
+        --color-ok-ink: oklch(84% 0.14 150);
+        --color-ng-ink: oklch(80% 0.16 18);
+
+        --color-focus: oklch(80% 0.13 235);
+        --color-on-accent: oklch(18% 0.012 250);
+
+        --color-surface: oklch(24% 0.016 95);
+        --color-field: oklch(17% 0.014 95);
+
+        --shadow-card: 0 1px 2px oklch(12% 0.010 250 / 0.30),
+            0 12px 32px -16px oklch(12% 0.010 250 / 0.55);
+        --shadow-card-hover: 0 2px 4px oklch(12% 0.010 250 / 0.34),
+            0 20px 44px -18px oklch(12% 0.010 250 / 0.62);
+        --shadow-hairline: 0 1px 2px oklch(12% 0.010 250 / 0.30);
+        --shadow-seg: 0 1px 3px oklch(12% 0.010 250 / 0.40);
+        --shadow-lift: 0 6px 14px -6px oklch(12% 0.010 250 / 0.55);
+        --cast-neutral: oklch(12% 0.010 250 / 0.45);
+    }
+}
