@@ -353,6 +353,19 @@ button {
 }
 
 /* --------------------------------------------------------------------------
+   Sample quiz row (loader footer)
+   -------------------------------------------------------------------------- */
+.sample-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+}
+
+/* --------------------------------------------------------------------------
    Answer track — the signature
    -------------------------------------------------------------------------- */
 .track {

@@ -1,37 +1,110 @@
 {
     "meta": {
-        "title": "サンプルクイズ - Web基礎",
-        "description": "Selectaの動作確認用サンプルクイズです",
+        "title": "サンプルクイズ - 一般常識",
+        "description": "Selecta の動作確認用サンプル。地理・理科・歴史から10問。",
         "version": "1.0",
-        "created": "2026-07-20T00:00:00.000Z"
+        "created": "2026-07-21T00:00:00.000Z"
     },
     "questions": [
         {
             "id": "q-1",
-            "question": "HTMLでリンクを作成するタグはどれですか？",
-            "options": ["<link>", "<a>", "<href>", "<url>"],
+            "question": "日本で最も面積が大きい都道府県はどれですか？",
+            "options": ["岩手県", "北海道", "長野県", "福島県"],
             "correct": 1,
-            "explanation": "<a>タグのhref属性にURLを指定することでリンクを作成できます。",
-            "deck": "Web基礎",
-            "tags": ["HTML", "基礎"]
+            "explanation": "北海道の面積は約83,000km²で、2位の岩手県（約15,000km²）を大きく引き離しています。",
+            "deck": "地理",
+            "tags": ["日本", "地理"],
+            "difficulty": "easy"
         },
         {
             "id": "q-2",
-            "question": "CSSでテキストの色を指定するプロパティはどれですか？",
-            "options": ["background-color", "color", "text-color", "font-color"],
-            "correct": 1,
-            "explanation": "colorプロパティはテキストの色を指定するために使用します。",
-            "deck": "Web基礎",
-            "tags": ["CSS", "スタイル"]
+            "question": "水を表す化学式はどれですか？",
+            "options": ["CO₂", "O₂", "H₂O", "NaCl"],
+            "correct": 2,
+            "explanation": "水は水素原子2個と酸素原子1個が結びついた化合物で、H₂O と表します。",
+            "deck": "理科",
+            "tags": ["化学", "基礎"],
+            "difficulty": "easy"
         },
         {
             "id": "q-3",
-            "question": "JavaScriptで定数を宣言するキーワードはどれですか？",
-            "options": ["var", "let", "const", "static"],
+            "question": "太陽系で最も大きい惑星はどれですか？",
+            "options": ["木星", "土星", "地球", "海王星"],
+            "correct": 0,
+            "explanation": "木星の直径は約14万kmで、地球の約11倍あります。太陽系の惑星の中で最大です。",
+            "deck": "理科",
+            "tags": ["天文", "宇宙"],
+            "difficulty": "easy"
+        },
+        {
+            "id": "q-4",
+            "question": "随筆『枕草子』の作者は誰ですか？",
+            "options": ["紫式部", "松尾芭蕉", "鴨長明", "清少納言"],
+            "correct": 3,
+            "explanation": "『枕草子』は平安時代に清少納言が書いた随筆です。紫式部は『源氏物語』の作者です。",
+            "deck": "国語",
+            "tags": ["古典", "文学"],
+            "difficulty": "medium"
+        },
+        {
+            "id": "q-5",
+            "question": "1年のうちで最も昼の時間が長い日を何といいますか？",
+            "options": ["春分", "冬至", "夏至", "秋分"],
             "correct": 2,
-            "explanation": "constで宣言した変数は再代入できません。",
-            "deck": "Web基礎",
-            "tags": ["JavaScript", "基礎"]
+            "explanation": "夏至は北半球で昼が最も長くなる日で、日本ではおよそ6月21日ごろにあたります。",
+            "deck": "理科",
+            "tags": ["天文", "暦"],
+            "difficulty": "easy"
+        },
+        {
+            "id": "q-6",
+            "question": "世界で最も面積が大きい国はどれですか？",
+            "options": ["ロシア", "カナダ", "中国", "アメリカ合衆国"],
+            "correct": 0,
+            "explanation": "ロシアの面積は約1,710万km²で、2位のカナダ（約998万km²）の1.7倍以上あります。",
+            "deck": "地理",
+            "tags": ["世界", "地理"],
+            "difficulty": "easy"
+        },
+        {
+            "id": "q-7",
+            "question": "光の三原色は、赤・緑ともう一つは何ですか？",
+            "options": ["黄", "白", "紫", "青"],
+            "correct": 3,
+            "explanation": "光の三原色は赤（R）・緑（G）・青（B）です。3色を重ねると白色光になります。",
+            "deck": "理科",
+            "tags": ["物理", "色"],
+            "difficulty": "medium"
+        },
+        {
+            "id": "q-8",
+            "question": "人体で最も大きい内臓はどれですか？",
+            "options": ["心臓", "肝臓", "肺", "胃"],
+            "correct": 1,
+            "explanation": "肝臓は成人で約1.2〜1.5kgあり、内臓の中で最も大きな器官です。",
+            "deck": "理科",
+            "tags": ["生物", "人体"],
+            "difficulty": "medium"
+        },
+        {
+            "id": "q-9",
+            "question": "富士山の標高はおよそ何メートルですか？",
+            "options": ["3,776m", "2,776m", "4,776m", "1,776m"],
+            "correct": 0,
+            "explanation": "富士山の標高は3,776mで、日本で最も高い山です。",
+            "deck": "地理",
+            "tags": ["日本", "地理"],
+            "difficulty": "easy"
+        },
+        {
+            "id": "q-10",
+            "question": "明治維新が起きたのは何世紀のことですか？",
+            "options": ["17世紀", "18世紀", "20世紀", "19世紀"],
+            "correct": 3,
+            "explanation": "明治維新は1868年（明治元年）に始まった一連の改革で、19世紀後半のできごとです。",
+            "deck": "歴史",
+            "tags": ["日本史", "近代"],
+            "difficulty": "medium"
         }
     ]
 }

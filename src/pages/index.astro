@@ -45,6 +45,11 @@ import NavBar from '../components/NavBar.astro';
                         <button type="button" class="btn" id="load-urls-btn">URLからクイズを読み込み</button>
                     </div>
                 </div>
+
+                <div class="sample-row">
+                    <p class="help">はじめてなら、同梱のサンプル（一般常識10問）で試せます。</p>
+                    <button type="button" class="btn btn--ghost" id="load-sample-btn">サンプルで試す</button>
+                </div>
             </div>
         </section>
 
@@ -117,6 +122,7 @@ import NavBar from '../components/NavBar.astro';
                 const restartBtn = document.getElementById('restart-btn') as HTMLButtonElement;
                 const newQuizBtn = document.getElementById('new-quiz-btn') as HTMLButtonElement;
                 const loadUrlsBtn = document.getElementById('load-urls-btn') as HTMLButtonElement;
+                const loadSampleBtn = document.getElementById('load-sample-btn') as HTMLButtonElement;
 
                 fileInput.addEventListener('change', (e) => this.handleFileLoad(e));
                 prevBtn.addEventListener('click', () => this.previousQuestion());
@@ -124,6 +130,7 @@ import NavBar from '../components/NavBar.astro';
                 restartBtn.addEventListener('click', () => this.restart());
                 newQuizBtn.addEventListener('click', () => this.loadNewQuiz());
                 loadUrlsBtn.addEventListener('click', () => this.handleUrlLoad());
+                loadSampleBtn.addEventListener('click', () => this.loadSampleQuiz());
 
                 // タブ切り替え
                 document.querySelectorAll('[data-source]').forEach(tab => {
@@ -163,6 +170,14 @@ import NavBar from '../components/NavBar.astro';
                     return;
                 }
 
+                await this.loadQuizzesFromUrls(urls);
+            }
+
+            private async loadSampleQuiz() {
+                await this.loadQuizzesFromUrls(['/sample-quiz.json']);
+            }
+
+            private async loadQuizzesFromUrls(urls: string[]) {
                 try {
                     this.quizQueue = [];
                     for (const url of urls) {
@@ -178,7 +193,7 @@ import NavBar from '../components/NavBar.astro';
                     this.allResults = [];
                     this.startQuizFromQueue();
                 } catch (error) {
-                    alert('URLからの読み込みに失敗しました: ' + error);
+                    alert('クイズの読み込みに失敗しました: ' + error);
                     console.error(error);
                 }
             }
