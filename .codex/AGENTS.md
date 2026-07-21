@@ -19,21 +19,27 @@ CSV / JSON / Anki の相互変換も持つ。すべてクライアントサイ�
 
 - **Astro 5 + TypeScript (strict)**。ページロジックは各 `.astro` のインライン `<script>` 内クラスに集約
   （独立した JS モジュールは持たない）。
-- **Styling**: 自前 CSS デザインシステム "Frost"（`src/styles/main.css`）。CSS フレームワークは使わない
-  （Bulma は廃止済み）。デザイントークンで light/dark、frosted glass、pill button を駆動。
-- **PWA**: `@vite-pwa/astro`（autoUpdate, Workbox）。
+- **Styling**: 自前 CSS デザインシステム "Hum"。CSS フレームワークは使わない（Bulma は廃止済み）。
+  リテラル値は `src/styles/tokens.css` にのみ置き、`src/styles/main.css` はそれを参照する。
+  判断の根拠はルートの [`design.md`](../design.md) にある。
+  **glassmorphism は禁止**（旧 "Frost" の frosted glass は撤去済み。復活させない）。
+- **PWA**: `@vite-pwa/astro`（autoUpdate, Workbox）。**SW の登録は `Layout.astro` の手動配線が前提** —
+  自動注入は Astro では効かない。詳細は `.memory/pwa-registration-wiring.md`。
 
 ## Layout
 
 - `src/pages/index.astro` — クイズプレイヤー / `src/pages/convert.astro` — 形式変換
 - `src/components/` — `Layout` / `NavBar` / `Footer`
-- `src/styles/main.css` — Frost デザインシステム
+- `src/styles/tokens.css` — 全トークン（色・余白・型・モーション、light/dark 両方）
+- `src/styles/main.css` — Hum デザインシステム本体 / `design.md` — 判断の根拠
 - `quiz-schema.json` — クイズデータの JSON Schema / `public/` — `favicon.svg`, `sample-quiz.json`
 
 ## 契約 (Conventions)
 
 - **データ契約**: `options` はちょうど 4 要素、`correct` は 0–3 のインデックス。`quiz-schema.json` に準拠。
-- **デザイン**: 色やスペースは `main.css` の `:root` トークン経由で扱い、直書きしない。light/dark 両テーマを必ず維持する。
+- **デザイン**: **デザインを触る前に `design.md` を読む。** 色・余白・書体は `tokens.css` の
+  トークン経由でのみ扱い、`main.css` や `.astro` に生の値を直書きしない。
+  light/dark 両テーマを必ず維持する（Hum は light 専用テーマなので、dark は自前の派生）。
 - **ブランド**: 表記は "Selecta" のみ。旧名 "AnySlash" / "anyslash" / "Osumi Akari" / "oageo" は使わない。
   作者は kmch4n（https://kmchan.jp）、リポジトリは https://github.com/kmch4n/Selecta。
 - **エンコード**: すべて UTF-8（BOM なし）/ LF。

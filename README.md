@@ -53,7 +53,10 @@ exactly four `options` and a `correct` index (0–3). The full schema is defined
 ## Tech Stack
 
 - [Astro 5](https://astro.build/) with TypeScript (strict)
-- A hand-written CSS design system, "Frost" (`src/styles/main.css`) — no CSS framework
+- A hand-written CSS design system, "Hum" — no CSS framework. Tokens live in
+  `src/styles/tokens.css`; the reasoning behind them is in [`design.md`](design.md)
+- Plus Jakarta Sans, Zen Maru Gothic, and JetBrains Mono, self-hosted so the app
+  stays offline-capable and no request leaves the origin
 - [`@vite-pwa/astro`](https://vite-pwa-org.netlify.app/) for the service worker and manifest
 
 ## License
