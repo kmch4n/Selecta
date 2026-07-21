@@ -6,11 +6,10 @@ import NavBar from '../components/NavBar.astro';
 <Layout title="Selecta - ファイル形式変換">
     <NavBar showQuizLink={true} />
 
-    <main class="shell shell--wide stack-lg">
-        <div class="stack-md">
-            <p class="eyebrow">Tools</p>
-            <h2 class="display">ファイル形式変換</h2>
-            <p class="muted">CSV・JSON・Ankiエクスポートをクイズ形式に相互変換します。</p>
+    <main class="shell stack-lg">
+        <div>
+            <h1>ファイル形式を変換する</h1>
+            <p class="lede">CSV・JSON・Anki エクスポートを相互に変換します。ファイルはブラウザの外に出ません。</p>
         </div>
 
         <div class="seg" role="tablist" aria-label="変換の種類">
@@ -26,114 +25,127 @@ import NavBar from '../components/NavBar.astro';
         </div>
 
         <!-- CSV to JSON -->
-        <section id="csv-to-json" class="tab-content card-glass stack-lg">
-            <div class="stack-md">
-                <h3 class="display">CSV → JSON変換</h3>
-                <p class="help">CSVファイルのフォーマット（ヘッダー行必須）:</p>
-                <code>question,option1,option2,option3,option4,correct,explanation,deck,tags</code>
-            </div>
+        <section id="csv-to-json" class="tab-content bench">
+            <div class="bench__pane">
+                <div class="bench__label">
+                    <h2>入力</h2>
+                    <span class="label-mono">CSV</span>
+                </div>
+                <div>
+                    <p class="help">ヘッダー行が必要です。</p>
+                    <code>question,option1,option2,option3,option4,correct,explanation,deck,tags</code>
+                </div>
 
-            <div class="field">
-                <span class="label">CSVファイル</span>
-                <label class="file-btn btn-row">
+                <label class="file-btn">
                     <input type="file" accept=".csv" id="csv-file" />
-                    <span class="btn btn--ghost">CSVファイルを選択</span>
+                    <span class="btn btn--soft">CSVを選ぶ</span>
                     <span class="file-btn__name" id="csv-file-name"></span>
                 </label>
+
+                <div class="field">
+                    <label class="label" for="csv-title">クイズタイトル</label>
+                    <input class="input" type="text" id="csv-title" placeholder="変換後のタイトル" />
+                </div>
+
+                <div><button type="button" class="btn" id="convert-csv-btn">変換する</button></div>
             </div>
 
-            <div class="field">
-                <label class="label" for="csv-title">クイズタイトル</label>
-                <input class="input" type="text" id="csv-title" placeholder="変換されたクイズのタイトル" />
-            </div>
-
-            <div class="field">
-                <button type="button" class="btn" id="convert-csv-btn">JSON形式に変換</button>
-            </div>
-
-            <div id="csv-result" class="stack-md" style="display: none;">
-                <p class="label">変換結果</p>
-                <textarea class="textarea textarea--code" id="csv-json-output" rows="10" readonly></textarea>
-                <button type="button" class="btn btn--ok" id="download-csv-json-btn">JSONファイルをダウンロード</button>
+            <div id="csv-result" class="bench__pane bench__pane--out" style="display: none;">
+                <div class="bench__label">
+                    <h2>出力</h2>
+                    <span class="label-mono">JSON</span>
+                </div>
+                <textarea class="textarea textarea--code" id="csv-json-output" rows="12" readonly></textarea>
+                <div><button type="button" class="btn btn--soft" id="download-csv-json-btn">ダウンロード</button></div>
             </div>
         </section>
 
         <!-- JSON to CSV -->
-        <section id="json-to-csv" class="tab-content card-glass stack-lg" style="display: none;">
-            <h3 class="display">JSON → CSV変換</h3>
+        <section id="json-to-csv" class="tab-content bench" style="display: none;">
+            <div class="bench__pane">
+                <div class="bench__label">
+                    <h2>入力</h2>
+                    <span class="label-mono">JSON</span>
+                </div>
+                <p class="help">Selecta 形式のクイズ JSON を選んでください。</p>
 
-            <div class="field">
-                <span class="label">JSONファイル</span>
-                <label class="file-btn btn-row">
+                <label class="file-btn">
                     <input type="file" accept=".json" id="json-file" />
-                    <span class="btn btn--ghost">JSONファイルを選択</span>
+                    <span class="btn btn--soft">JSONを選ぶ</span>
                     <span class="file-btn__name" id="json-file-name"></span>
                 </label>
+
+                <div><button type="button" class="btn" id="convert-json-btn">変換する</button></div>
             </div>
 
-            <div class="field">
-                <button type="button" class="btn" id="convert-json-btn">CSV形式に変換</button>
-            </div>
-
-            <div id="json-result" class="stack-md" style="display: none;">
-                <p class="label">変換結果</p>
-                <textarea class="textarea textarea--code" id="json-csv-output" rows="10" readonly></textarea>
-                <div class="btn-row">
-                    <button type="button" class="btn btn--ok" id="download-json-csv-btn">
-                        標準CSV（UTF-8）をダウンロード
-                    </button>
-                    <button type="button" class="btn btn--ghost" id="download-json-excel-csv-btn">
-                        Excel用CSV（BOM付きUTF-8）をダウンロード
-                    </button>
+            <div id="json-result" class="bench__pane bench__pane--out" style="display: none;">
+                <div class="bench__label">
+                    <h2>出力</h2>
+                    <span class="label-mono">CSV</span>
+                </div>
+                <textarea class="textarea textarea--code" id="json-csv-output" rows="12" readonly></textarea>
+                <div>
+                    <p class="help">Excel で開くなら BOM 付きを選んでください。</p>
+                    <div class="btn-row">
+                        <button type="button" class="btn btn--soft" id="download-json-csv-btn">標準CSV</button>
+                        <button type="button" class="btn btn--outline" id="download-json-excel-csv-btn">
+                            Excel用CSV
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- Anki to JSON -->
-        <section id="anki-to-json" class="tab-content card-glass stack-lg" style="display: none;">
-            <div class="stack-md">
-                <h3 class="display">Anki → JSON変換</h3>
-                <p class="help">Ankiのエクスポート形式（タブ区切り）に対応:</p>
-                <code>質問[TAB]答え[TAB]選択肢1|選択肢2|選択肢3|選択肢4</code>
-                <p class="help">※ 答えが選択肢の中に含まれている必要があります</p>
-            </div>
+        <section id="anki-to-json" class="tab-content bench" style="display: none;">
+            <div class="bench__pane">
+                <div class="bench__label">
+                    <h2>入力</h2>
+                    <span class="label-mono">ANKI</span>
+                </div>
+                <div>
+                    <p class="help">Anki のエクスポート形式（タブ区切り）に対応します。</p>
+                    <code>質問[TAB]答え[TAB]選択肢1|選択肢2|選択肢3|選択肢4</code>
+                    <p class="help">答えが選択肢のどれかと一致している必要があります。</p>
+                </div>
 
-            <div class="field">
-                <span class="label">Ankiファイル (.txt)</span>
-                <label class="file-btn btn-row">
+                <label class="file-btn">
                     <input type="file" accept=".txt" id="anki-file" />
-                    <span class="btn btn--ghost">Ankiファイルを選択</span>
+                    <span class="btn btn--soft">テキストを選ぶ</span>
                     <span class="file-btn__name" id="anki-file-name"></span>
                 </label>
+
+                <div class="field">
+                    <label class="label" for="anki-title">クイズタイトル</label>
+                    <input class="input" type="text" id="anki-title" placeholder="変換後のタイトル" />
+                </div>
+
+                <div><button type="button" class="btn" id="convert-anki-btn">変換する</button></div>
             </div>
 
-            <div class="field">
-                <label class="label" for="anki-title">クイズタイトル</label>
-                <input class="input" type="text" id="anki-title" placeholder="変換されたクイズのタイトル" />
-            </div>
-
-            <div class="field">
-                <button type="button" class="btn" id="convert-anki-btn">JSON形式に変換</button>
-            </div>
-
-            <div id="anki-result" class="stack-md" style="display: none;">
-                <p class="label">変換結果</p>
-                <textarea class="textarea textarea--code" id="anki-json-output" rows="10" readonly></textarea>
-                <button type="button" class="btn btn--ok" id="download-anki-json-btn">JSONファイルをダウンロード</button>
+            <div id="anki-result" class="bench__pane bench__pane--out" style="display: none;">
+                <div class="bench__label">
+                    <h2>出力</h2>
+                    <span class="label-mono">JSON</span>
+                </div>
+                <textarea class="textarea textarea--code" id="anki-json-output" rows="12" readonly></textarea>
+                <div><button type="button" class="btn btn--soft" id="download-anki-json-btn">ダウンロード</button></div>
             </div>
         </section>
 
-        <section class="card-glass stack-md">
-            <h3 class="display">サンプルファイル</h3>
-            <p class="help">変換機能をテストするためのサンプルファイル:</p>
-            <div class="btn-row">
-                <a href="/sample-quiz.json" class="btn btn--ghost" download>サンプルJSONをダウンロード</a>
-                <button type="button" class="btn btn--ghost" id="generate-sample-csv">サンプルCSV（標準）を生成</button>
-                <button type="button" class="btn btn--ghost" id="generate-sample-excel-csv">
-                    サンプルCSV（Excel用）を生成
-                </button>
+        <div>
+            <hr class="divider" />
+            <div class="bench__label">
+                <h2>見本ファイル</h2>
+                <span class="label-mono">Samples</span>
             </div>
-        </section>
+            <p class="help">形式を確かめたいときに。</p>
+            <div class="btn-row btn-row--spaced">
+                <a href="/sample-quiz.json" class="btn btn--outline" download>JSON</a>
+                <button type="button" class="btn btn--outline" id="generate-sample-csv">標準CSV</button>
+                <button type="button" class="btn btn--outline" id="generate-sample-excel-csv">Excel用CSV</button>
+            </div>
+        </div>
     </main>
 
     <script>
