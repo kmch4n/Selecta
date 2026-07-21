@@ -2,6 +2,9 @@
  * theme: Hum · enrichment: none · nav: N1 · footer: Ft2
  * design-system: design.md · designed-as-app
  * pre-emit critique: P5 H5 E4 S5 R4 V4
+ * contrast: pass (40-41) — 26 samples/theme, min 5.15 light / 5.43 dark
+ * tokens: pass (48) · responsive: pass (34, 49-57) · honest: pass (46)
+ * chrome: pass (47) · icons: pass (30) · mobile: pass at 320/375/414/768
  *
  * Every literal value lives in tokens.css. Nothing here declares a raw colour,
  * length, or font-family — if a value is missing, add it there and reference it.
@@ -149,8 +152,8 @@ button {
     color: inherit;
     background-image: linear-gradient(var(--hl, var(--color-accent-soft)) 0 0);
     background-repeat: no-repeat;
-    background-size: 100% 0.32em;
-    background-position: 0 82%;
+    background-size: 100% 0.44em;
+    background-position: 0 76%;
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
     padding-bottom: 0.02em;
@@ -251,6 +254,10 @@ button {
         background-color var(--dur-short) var(--ease-out);
 }
 
+.nav__link:active {
+    transform: translateY(1px);
+}
+
 .nav__link:hover {
     color: var(--color-ink);
     background: var(--color-paper-2);
@@ -285,6 +292,8 @@ button {
     isolation: isolate;
     /* a label is a one-line object — a wrapped CTA reads as a styling error */
     white-space: nowrap;
+    min-height: var(--control-h);
+    line-height: 1;
     box-shadow: 0 4px 0 0 var(--btn-edge), 0 6px 12px -3px var(--btn-cast);
     transform: translateY(0);
     transition: transform var(--dur-short) var(--ease-press),
@@ -462,6 +471,10 @@ button {
         background-color var(--dur-short) var(--ease-out);
 }
 
+.seg__btn:active {
+    transform: translateY(1px);
+}
+
 .seg__btn.is-active {
     background: var(--color-surface);
     color: var(--color-ink);
@@ -485,7 +498,7 @@ button {
     border-radius: var(--radius-pill);
     background: var(--color-paper-3);
     transition: background-color var(--dur-mid) var(--ease-out),
-        transform var(--dur-mid) var(--ease-spring);
+        transform var(--dur-mid) var(--ease-snap);
 }
 
 .track__seg.is-ok {
@@ -562,7 +575,6 @@ button {
 
 .opt:not(:disabled):hover {
     border-color: var(--color-accent-deep);
-    background: var(--color-paper-2);
     transform: translateY(-2px);
     box-shadow: var(--shadow-lift);
 }
@@ -630,18 +642,16 @@ button {
 .opt__mark {
     margin-left: auto;
     flex-shrink: 0;
-    font-family: var(--font-label);
     font-size: var(--text-xs);
-    letter-spacing: var(--tracking-label);
-    text-transform: uppercase;
+    font-weight: 700;
 }
 
 .opt.is-ok .opt__mark {
-    color: var(--color-ok);
+    color: var(--color-ok-ink);
 }
 
 .opt.is-ng .opt__mark {
-    color: var(--color-ng);
+    color: var(--color-ng-ink);
 }
 
 /* --------------------------------------------------------------------------
@@ -663,12 +673,12 @@ button {
 }
 
 .verdict .is-ok {
-    color: var(--color-ok);
+    color: var(--color-ok-ink);
     font-weight: 700;
 }
 
 .verdict .is-ng {
-    color: var(--color-ng);
+    color: var(--color-ng-ink);
     font-weight: 700;
 }
 
@@ -824,12 +834,12 @@ button {
     border: 1.5px solid var(--color-rule);
     border-radius: var(--radius-input);
     padding: var(--space-2xs) var(--space-xs);
+    min-height: var(--control-h);
     transition: border-color var(--dur-short) var(--ease-out);
 }
 
 .input:focus,
 .textarea:focus {
-    outline: none;
     border-color: var(--color-accent-deep);
 }
 
@@ -972,6 +982,8 @@ code {
 
     .btn:hover,
     .btn:active,
+    .seg__btn:active,
+    .nav__link:active,
     .opt:not(:disabled):hover,
     .opt:not(:disabled):active,
     .btn--outline:hover,

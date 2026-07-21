@@ -40,6 +40,12 @@
     --color-ng: oklch(58% 0.21 18);
     --color-ng-soft: oklch(68% 0.24 18 / 0.14);
 
+    /* The fill versions above are tuned to read as colour on a large surface.
+       Small text needs more contrast than a 12px label gets from them, so the
+       ink versions are darkened to clear 4.5:1 on paper and paper-2. */
+    --color-ok-ink: oklch(48% 0.13 150);
+    --color-ng-ink: oklch(50% 0.19 18);
+
     --color-focus: oklch(52% 0.15 235);
     --color-on-accent: oklch(20% 0.012 250); /* ink on pear — pear is light */
 
@@ -104,6 +110,9 @@
     /* ----------------------------------------------------------------------
        Shape — Hum is the rounded theme. No square corners anywhere.
        ---------------------------------------------------------------------- */
+    /* one base height so an input and the button beside it agree */
+    --control-h: 2.75rem;
+
     --radius-card: 20px;
     --radius-input: 12px;
     --radius-chip: 10px;
@@ -169,19 +178,23 @@
         --color-ng: oklch(70% 0.19 18);
         --color-ng-soft: oklch(70% 0.19 18 / 0.16);
 
+        /* on dark the ink versions go lighter, not darker */
+        --color-ok-ink: oklch(84% 0.14 150);
+        --color-ng-ink: oklch(80% 0.16 18);
+
         --color-focus: oklch(80% 0.13 235);
         --color-on-accent: oklch(18% 0.012 250);
 
         --color-surface: oklch(24% 0.016 95);
         --color-field: oklch(17% 0.014 95);
 
-        --shadow-card: 0 1px 2px oklch(0% 0 0 / 0.30),
-            0 12px 32px -16px oklch(0% 0 0 / 0.55);
-        --shadow-card-hover: 0 2px 4px oklch(0% 0 0 / 0.34),
-            0 20px 44px -18px oklch(0% 0 0 / 0.62);
-        --shadow-hairline: 0 1px 2px oklch(0% 0 0 / 0.30);
-        --shadow-seg: 0 1px 3px oklch(0% 0 0 / 0.40);
-        --shadow-lift: 0 6px 14px -6px oklch(0% 0 0 / 0.55);
-        --cast-neutral: oklch(0% 0 0 / 0.45);
+        --shadow-card: 0 1px 2px oklch(12% 0.010 250 / 0.30),
+            0 12px 32px -16px oklch(12% 0.010 250 / 0.55);
+        --shadow-card-hover: 0 2px 4px oklch(12% 0.010 250 / 0.34),
+            0 20px 44px -18px oklch(12% 0.010 250 / 0.62);
+        --shadow-hairline: 0 1px 2px oklch(12% 0.010 250 / 0.30);
+        --shadow-seg: 0 1px 3px oklch(12% 0.010 250 / 0.40);
+        --shadow-lift: 0 6px 14px -6px oklch(12% 0.010 250 / 0.55);
+        --cast-neutral: oklch(12% 0.010 250 / 0.45);
     }
 }
