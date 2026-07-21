@@ -5,6 +5,20 @@ export interface Props {
 
 const { title } = Astro.props;
 import Footer from './Footer.astro';
+
+// Self-hosted so the PWA keeps working offline and no request leaves the origin.
+// These are the chunked entry points: each pulls a stylesheet of unicode-range
+// @font-face rules, so the browser downloads only the ranges a page actually
+// renders. Do NOT switch to the `japanese-*.css` entries — those are single
+// ~1.4 MB files with no range splitting.
+import '@fontsource/plus-jakarta-sans/400.css';
+import '@fontsource/plus-jakarta-sans/600.css';
+import '@fontsource/plus-jakarta-sans/700.css';
+import '@fontsource/zen-maru-gothic/400.css';
+import '@fontsource/zen-maru-gothic/700.css';
+import '@fontsource/jetbrains-mono/500.css';
+
+import '../styles/tokens.css';
 import '../styles/main.css';
 ---
 
@@ -16,8 +30,8 @@ import '../styles/main.css';
         <meta name="generator" content={Astro.generator} />
         <title>{title}</title>
         <meta name="description" content="4択クイズアプリ（Anki互換）" />
-        <meta name="theme-color" content="#ecf4fa" media="(prefers-color-scheme: light)" />
-        <meta name="theme-color" content="#0c151d" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#f9f5eb" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#18160f" media="(prefers-color-scheme: dark)" />
         <meta property="og:type" content="website" />
         <meta property="og:title" content={title} />
         <meta property="og:description" content="4択クイズアプリ（Anki互換）" />
