@@ -70,7 +70,7 @@ import NavBar from '../components/NavBar.astro';
 
                 <div class="btn-row" id="quiz-buttons">
                     <button type="button" id="prev-btn" class="btn btn--ghost" disabled>前の問題</button>
-                    <button type="button" id="next-btn" class="btn" disabled>次の問題</button>
+                    <button type="button" id="next-btn" class="btn" data-mode="question" disabled>次の問題</button>
                     <button type="button" id="restart-btn" class="btn btn--ghost">やり直し</button>
                     <button type="button" id="new-quiz-btn" class="btn btn--ghost" style="display: none;">
                         別のクイズを読み込む
@@ -246,7 +246,7 @@ import NavBar from '../components/NavBar.astro';
                     } else if (this.isConfirmed) {
                         // 次の問題 or 次のクイズへ
                         const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
-                        if (nextBtn.textContent === '次のクイズへ') {
+                        if (nextBtn.dataset.mode === 'quiz') {
                             this.proceedToNextQuiz();
                         } else {
                             this.nextQuestion();
@@ -270,6 +270,17 @@ import NavBar from '../components/NavBar.astro';
                 }
             }
 
+            /**
+             * 「次へ」ボタンのラベルと役割を必ず一組で設定する。
+             * キーボード経路（Enter）はラベル文字列ではなく data-mode を見るため、
+             * 表示文言を変えても分岐が壊れない。
+             */
+            private setNextMode(mode: 'question' | 'quiz', label: string) {
+                const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
+                nextBtn.dataset.mode = mode;
+                nextBtn.textContent = label;
+            }
+
             private startQuiz() {
                 if (!this.quizData) return;
 
@@ -282,7 +293,7 @@ import NavBar from '../components/NavBar.astro';
                 document.getElementById('question-text')!.style.display = '';
                 document.getElementById('prev-btn')!.style.display = '';
                 document.getElementById('next-btn')!.style.display = '';
-                document.getElementById('next-btn')!.textContent = '次の問題';
+                this.setNextMode('question', '次の問題');
                 document.getElementById('new-quiz-btn')!.style.display = 'none';
 
                 const quizTitle = this.quizQueue.length > 1
@@ -519,7 +530,7 @@ import NavBar from '../components/NavBar.astro';
                 // 次のクイズがある場合の処理
                 if (this.currentQuizIndex + 1 < this.quizQueue.length) {
                     resultHtml += `<p style="margin-top: 12px;">次のクイズに進みますか？</p>`;
-                    document.getElementById('next-btn')!.textContent = '次のクイズへ';
+                    this.setNextMode('quiz', '次のクイズへ');
                     (document.getElementById('next-btn') as HTMLButtonElement).disabled = false;
 
                     // 次のクイズボタンのイベントリスナーを更新
@@ -573,7 +584,7 @@ import NavBar from '../components/NavBar.astro';
                 document.getElementById('question-text')!.style.display = '';
                 document.getElementById('new-quiz-btn')!.style.display = 'none';
                 document.getElementById('next-btn')!.style.display = '';
-                document.getElementById('next-btn')!.textContent = '次の問題';
+                this.setNextMode('question', '次の問題');
                 document.getElementById('prev-btn')!.style.display = '';
                 this.displayQuestion();
             }
