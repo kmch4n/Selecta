@@ -28,3 +28,6 @@ pnpm-debug.log*
 
 # hallmark build history
 .hallmark/
+
+# local launch script
+start.ps1
