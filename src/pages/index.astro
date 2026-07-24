@@ -9,7 +9,7 @@ import NavBar from '../components/NavBar.astro';
     <main class="shell">
         <section id="file-input-section">
             <div class="hero">
-                <h1 class="hero__title">4択クイズを、<span class="hl">手元のファイル</span>から。</h1>
+                <h1 class="hero__title">4択クイズを、<wbr />手元のファイルから。</h1>
                 <p class="hero__lede">
                     読み込みも採点もブラウザの中だけで完結します。ファイルはどこにも送られません。
                 </p>
@@ -418,13 +418,6 @@ import NavBar from '../components/NavBar.astro';
                 this.updateOptionStates();
                 this.renderTrack();
 
-                if (isCorrect) {
-                    const chosen = document.querySelectorAll<HTMLElement>('#options-container .opt')[
-                        this.selectedOption
-                    ];
-                    if (chosen) this.burst(chosen.querySelector<HTMLElement>('.opt__key') ?? chosen);
-                }
-
                 const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
                 nextBtn.disabled = false;
             }
@@ -459,22 +452,6 @@ import NavBar from '../components/NavBar.astro';
 
             private prefersReducedMotion(): boolean {
                 return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            }
-
-            /**
-             * 正解したときだけ一度だけ弾ける。色は pear（アクセント）で、
-             * coral は誤答の色として予約済みなので祝福には使わない。
-             */
-            private burst(anchor: HTMLElement) {
-                if (this.prefersReducedMotion()) return;
-
-                const rect = anchor.getBoundingClientRect();
-                const star = document.createElement('span');
-                star.className = 'star-burst';
-                star.style.left = `${rect.left + rect.width / 2 - 12 + window.scrollX}px`;
-                star.style.top = `${rect.top + rect.height / 2 - 12 + window.scrollY}px`;
-                star.addEventListener('animationend', () => star.remove());
-                document.body.appendChild(star);
             }
 
             /**

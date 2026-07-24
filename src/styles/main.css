@@ -1,10 +1,7 @@
-/* Hallmark · genre: playful · macrostructure: Marquee Hero (/) + Workbench (/convert)
- * theme: Hum · enrichment: none · nav: N1 · footer: Ft2
- * design-system: design.md · designed-as-app
- * pre-emit critique: P5 H5 E4 S5 R4 V4
- * contrast: pass (40-41) — 26 samples/theme, min 5.15 light / 5.43 dark
- * tokens: pass (48) · responsive: pass (34, 49-57) · honest: pass (46)
- * chrome: pass (47) · icons: pass (30) · mobile: pass at 320/375/414/768
+/* Hallmark · genre: modern-minimal · macrostructure: Marquee Hero (/) + Workbench (/convert)
+ * theme: custom-quiet · enrichment: none · nav: N1 · footer: Ft2
+ * design-system: design.md · designed-as-app · light-only
+ * pre-emit critique: P5 H5 E4 S5 R5 V4
  *
  * Every literal value lives in tokens.css. Nothing here declares a raw colour,
  * length, or font-family — if a value is missing, add it there and reference it.
@@ -32,6 +29,9 @@ html {
     font-size: 100%;
     line-height: var(--leading-body);
     -webkit-text-size-adjust: 100%;
+    /* kinsoku for all Japanese text, not just headings: a line never begins
+       with 。、 or a small kana */
+    line-break: strict;
 }
 
 body {
@@ -60,8 +60,14 @@ h4 {
     font-weight: 700;
     letter-spacing: var(--tracking-display);
     line-height: var(--leading-tight);
-    /* long Japanese compounds and URLs must break rather than push the page */
+    /* Japanese wrapping: line-break:strict enforces kinsoku — a line never
+       starts with 。、 and never splits before a small kana (the ugly
+       手元のフ／ァイル break). overflow-wrap:anywhere stays as the last resort
+       so a long Latin token in user-supplied quiz text can't push the page. */
+    word-break: normal;
     overflow-wrap: anywhere;
+    line-break: strict;
+    text-wrap: pretty;
     min-width: 0;
 }
 
@@ -145,20 +151,6 @@ button {
     color: var(--color-ink-2);
 }
 
-/* Emphasis rides a clipped background band on the text itself, so it tracks
-   the words across a line wrap. An absolutely-positioned bar would only
-   underline the last line. */
-.hl {
-    color: inherit;
-    background-image: linear-gradient(var(--hl, var(--color-accent-soft)) 0 0);
-    background-repeat: no-repeat;
-    background-size: 100% 0.44em;
-    background-position: 0 76%;
-    -webkit-box-decoration-break: clone;
-    box-decoration-break: clone;
-    padding-bottom: 0.02em;
-}
-
 /* --------------------------------------------------------------------------
    Nav — N1. Two destinations at most, so the archetype is honest.
    -------------------------------------------------------------------------- */
@@ -189,54 +181,6 @@ button {
     text-decoration: none;
 }
 
-/* The character moment. The final letter carries a pear dot that breathes at
-   rest and hops when the wordmark is hovered or focused. It is the one piece
-   of the page that exists purely to feel alive. */
-.nav__dot {
-    position: relative;
-    display: inline-block;
-}
-
-.nav__dot::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    bottom: -0.28em;
-    width: 0.3em;
-    height: 0.3em;
-    margin-left: -0.15em;
-    border-radius: var(--radius-pill);
-    background: var(--color-accent);
-    animation: dot-breathe 4s var(--ease-out) infinite;
-}
-
-.nav__mark:hover .nav__dot::after,
-.nav__mark:focus-visible .nav__dot::after {
-    animation: dot-hop var(--dur-long) var(--ease-spring);
-}
-
-@keyframes dot-breathe {
-    0%,
-    100% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.28);
-    }
-}
-
-@keyframes dot-hop {
-    0% {
-        transform: translateY(0) scale(1);
-    }
-    40% {
-        transform: translateY(-0.42em) scale(1.15);
-    }
-    100% {
-        transform: translateY(0) scale(1);
-    }
-}
-
 .nav__links {
     display: flex;
     align-items: center;
@@ -248,7 +192,7 @@ button {
     font-weight: 600;
     color: var(--color-ink-2);
     padding: var(--space-3xs) var(--space-xs);
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-btn);
     white-space: nowrap;
     transition: color var(--dur-short) var(--ease-out),
         background-color var(--dur-short) var(--ease-out);
@@ -265,16 +209,11 @@ button {
 }
 
 /* --------------------------------------------------------------------------
-   Buttons — the Hum push system, copied from the theme spec.
-   The two shadows are the button's own thickness (flush to its width, never a
-   negative spread) and its cast shadow on the ground. The press IS the
-   feedback: it lifts on hover and physically depresses on :active.
+   Buttons — three quiet tiers. Primary is an ink-filled rectangle (the
+   Stripe/Linear voice); secondary is a filled paper chip; tertiary is a bare
+   hairline. All three share a small radius and a 1px press, no chunky edge.
    -------------------------------------------------------------------------- */
 .btn {
-    --btn-face: var(--color-accent);
-    --btn-ink: var(--color-on-accent);
-    --btn-edge: var(--color-accent-deep);
-    --btn-cast: var(--color-accent-cast);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -283,41 +222,34 @@ button {
     font-family: var(--font-display);
     font-weight: 600;
     font-size: var(--text-sm);
-    border: 0;
-    border-radius: var(--radius-pill);
-    color: var(--btn-ink);
-    background: var(--btn-face);
+    border: 1px solid var(--color-ink);
+    border-radius: var(--radius-btn);
+    color: var(--color-on-accent);
+    background: var(--color-ink);
     cursor: pointer;
-    position: relative;
-    isolation: isolate;
     /* a label is a one-line object — a wrapped CTA reads as a styling error */
     white-space: nowrap;
     min-height: var(--control-h);
     line-height: 1;
-    box-shadow: 0 4px 0 0 var(--btn-edge), 0 6px 12px -3px var(--btn-cast);
-    transform: translateY(0);
-    transition: transform var(--dur-short) var(--ease-press),
-        box-shadow var(--dur-short) var(--ease-press),
-        background-color var(--dur-mid) var(--ease-out);
+    transition: transform var(--dur-press) var(--ease-out),
+        background-color var(--dur-short) var(--ease-out),
+        border-color var(--dur-short) var(--ease-out);
 }
 
 .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 0 0 var(--btn-edge), 0 12px 22px -4px var(--btn-cast);
+    background: color-mix(in oklch, var(--color-ink) 88%, white);
+    border-color: color-mix(in oklch, var(--color-ink) 88%, white);
     text-decoration: none;
 }
 
 .btn:active {
-    transform: translateY(3px);
-    box-shadow: 0 1px 0 0 var(--btn-edge), 0 2px 6px -2px var(--btn-cast);
-    transition-duration: var(--dur-press);
+    transform: translateY(1px);
 }
 
 .btn:disabled {
-    opacity: 0.5;
+    opacity: 0.45;
     cursor: not-allowed;
     transform: none;
-    box-shadow: 0 4px 0 0 var(--btn-edge);
 }
 
 .btn--lg {
@@ -325,45 +257,29 @@ button {
     padding: var(--space-sm) var(--space-lg);
 }
 
-/* soft = flat lift, no colour edge. The secondary voice. */
+/* secondary — a filled paper chip, distinct from the bare tertiary */
 .btn--soft {
-    --btn-face: var(--color-paper-2);
-    --btn-ink: var(--color-ink);
-    --btn-edge: transparent;
-    --btn-cast: var(--cast-neutral);
-    box-shadow: 0 2px 8px -2px var(--btn-cast);
+    background: var(--color-paper-2);
+    color: var(--color-ink);
+    border-color: var(--color-rule);
 }
 
 .btn--soft:hover {
     background: var(--color-paper-3);
-    box-shadow: 0 6px 14px -4px var(--btn-cast);
+    border-color: var(--color-ink-2);
 }
 
-.btn--soft:active {
-    box-shadow: 0 1px 3px -1px var(--btn-cast);
-}
-
-/* outline = tertiary. Hairline that fills on hover. */
+/* tertiary — transparent hairline, fills faintly on hover */
 .btn--outline {
-    --btn-face: transparent;
-    --btn-ink: var(--color-ink-2);
-    --btn-edge: transparent;
-    --btn-cast: transparent;
-    box-shadow: none;
-    border: 1.5px solid var(--color-rule);
+    background: transparent;
+    color: var(--color-ink-2);
+    border-color: var(--color-rule);
 }
 
 .btn--outline:hover {
     color: var(--color-ink);
     background: var(--color-paper-2);
     border-color: var(--color-ink-2);
-    box-shadow: none;
-    transform: translateY(-1px);
-}
-
-.btn--outline:active {
-    transform: translateY(1px);
-    box-shadow: none;
 }
 
 .btn-row {
@@ -403,7 +319,12 @@ button {
 .hero__title {
     grid-column: 1 / -1;
     font-size: var(--text-display);
-    max-width: 14ch;
+    max-width: 22ch;
+    /* keep-all stops mid-phrase breaks; the <wbr> markers in the heading are
+       the preferred break points, so it wraps by phrase. overflow-wrap:anywhere
+       (inherited) is still the last resort, so a phrase too long for a 320px
+       line falls back to breaking rather than overflowing the clip. */
+    word-break: keep-all;
 }
 
 .hero__lede {
@@ -448,7 +369,7 @@ button {
     display: flex;
     gap: var(--space-3xs);
     padding: var(--space-3xs);
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-btn);
     background: var(--color-paper-2);
     width: fit-content;
     max-width: 100%;
@@ -461,7 +382,7 @@ button {
 }
 
 .seg__btn {
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-chip);
     padding: var(--space-3xs) var(--space-sm);
     font-size: var(--text-sm);
     font-weight: 600;
@@ -483,18 +404,16 @@ button {
 
 /* --------------------------------------------------------------------------
    Answer track — the signature. Semantics are reserved before decoration:
-   mint always means right, coral always means wrong, pear always means "here".
+   green always means right, red always means wrong, indigo always means "here".
    -------------------------------------------------------------------------- */
 .track {
     display: flex;
     gap: var(--space-3xs);
-    /* the off-grid moment: the track breaks the shell gutter on both sides */
-    margin-inline: calc(var(--page-gutter) * -0.5);
 }
 
 .track__seg {
     flex: 1;
-    height: 8px;
+    height: 6px;
     border-radius: var(--radius-pill);
     background: var(--color-paper-3);
     transition: background-color var(--dur-mid) var(--ease-out),
@@ -511,7 +430,7 @@ button {
 
 .track__seg.is-now {
     background: var(--color-accent);
-    transform: scaleY(1.6);
+    transform: scaleY(1.5);
 }
 
 .track--result .track__seg {
@@ -558,30 +477,25 @@ button {
     width: 100%;
     text-align: left;
     padding: var(--space-xs) var(--space-sm);
-    border-radius: var(--radius-card);
+    border-radius: var(--radius-btn);
     background: var(--color-surface);
-    border: 1.5px solid var(--color-rule);
+    border: 1px solid var(--color-rule);
     font-family: var(--font-body);
     font-size: var(--text-base);
     font-weight: 500;
     line-height: var(--leading-snug);
     color: var(--color-ink);
-    box-shadow: var(--shadow-hairline);
-    transition: transform var(--dur-short) var(--ease-press),
-        border-color var(--dur-short) var(--ease-out),
-        background-color var(--dur-short) var(--ease-out),
-        box-shadow var(--dur-short) var(--ease-out);
+    transition: border-color var(--dur-short) var(--ease-out),
+        background-color var(--dur-short) var(--ease-out);
 }
 
 .opt:not(:disabled):hover {
     border-color: var(--color-accent-deep);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lift);
+    background: var(--color-paper-2);
 }
 
 .opt:not(:disabled):active {
-    transform: translateY(2px);
-    box-shadow: none;
+    transform: translateY(1px);
     transition-duration: var(--dur-press);
 }
 
@@ -728,37 +642,6 @@ button {
     gap: var(--space-3xs);
     font-size: var(--text-sm);
     color: var(--color-ink-2);
-}
-
-/* --------------------------------------------------------------------------
-   Star-burst — fires once when an answer is right. Pear, not coral: coral is
-   already spoken for as the wrong-answer colour, and celebrating in the
-   failure colour would be incoherent.
-   -------------------------------------------------------------------------- */
-.star-burst {
-    position: absolute;
-    width: 24px;
-    height: 24px;
-    background: linear-gradient(90deg, transparent 47%, var(--color-accent) 47% 53%, transparent 53%),
-        linear-gradient(0deg, transparent 47%, var(--color-accent) 47% 53%, transparent 53%);
-    animation: star-burst 420ms var(--ease-out) forwards;
-    pointer-events: none;
-    z-index: var(--z-overlay);
-}
-
-@keyframes star-burst {
-    0% {
-        transform: scale(0) rotate(0deg);
-        opacity: 1;
-    }
-    60% {
-        transform: scale(1.2) rotate(35deg);
-        opacity: 0.9;
-    }
-    100% {
-        transform: scale(1.4) rotate(45deg);
-        opacity: 0;
-    }
 }
 
 /* --------------------------------------------------------------------------
@@ -996,16 +879,6 @@ code {
         /* the current position still has to be findable without the scale */
         outline: 2px solid var(--color-ink);
         outline-offset: 1px;
-    }
-
-    /* the burst is pure decoration — remove it outright */
-    .star-burst {
-        display: none;
-    }
-
-    /* the counter is information: it must show its final value, not zero */
-    .nav__dot::after {
-        animation: none;
     }
 }
 
