@@ -65,11 +65,11 @@
     /* ----------------------------------------------------------------------
        Type
        Latin resolves to Plus Jakarta Sans; Japanese has no glyphs there and
-       falls through to Zen Maru Gothic. Both are rounded humanist sans, so
-       the fallthrough is by design, not an accident.
+       falls through to Zen Kaku Gothic New — a clean, low-contrast gothic.
+       The rounded Zen Maru Gothic read too soft for the quiet direction.
        ---------------------------------------------------------------------- */
-    --font-display: "Plus Jakarta Sans", "Zen Maru Gothic", system-ui, sans-serif;
-    --font-body: "Plus Jakarta Sans", "Zen Maru Gothic", system-ui, sans-serif;
+    --font-display: "Plus Jakarta Sans", "Zen Kaku Gothic New", system-ui, sans-serif;
+    --font-body: "Plus Jakarta Sans", "Zen Kaku Gothic New", system-ui, sans-serif;
     --font-label: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
 
     --text-xs: 0.75rem;
