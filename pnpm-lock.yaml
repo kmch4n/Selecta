@@ -14,7 +14,7 @@ importers:
       '@fontsource/plus-jakarta-sans':
         specifier: ^5.3.0
         version: 5.3.0
-      '@fontsource/zen-maru-gothic':
+      '@fontsource/zen-kaku-gothic-new':
         specifier: ^5.3.0
         version: 5.3.0
       '@vite-pwa/astro':
@@ -719,8 +719,8 @@ packages:
   '@fontsource/plus-jakarta-sans@5.3.0':
     resolution: {integrity: sha512-9WRw3G74Ve4cyPApAZSXLPY5DiLOZXDn7Q7dIBjFBpA0Pj56ljDItEdy2UUajjJxRuTg2HkMLO5C3K2nAQORWg==}
 
-  '@fontsource/zen-maru-gothic@5.3.0':
-    resolution: {integrity: sha512-BuigfmzszMR3AOyAMSocQZ9bEq9o5sGCMOC/laI4TMpba1/KB1jxsdNFXWMUz02wVPd4vAVuMhsV00AQizFj3w==}
+  '@fontsource/zen-kaku-gothic-new@5.3.0':
+    resolution: {integrity: sha512-2t88gAaUkqIAFARfO8GkT1x57QBRx8A0pWeB0CIrIahnzdanWjcV4thPCSv9BJmpeRndq6qbFx1KYglHykiPhw==}
 
   '@img/sharp-darwin-arm64@0.33.5':
     resolution: {integrity: sha512-UT4p+iz/2H4twwAoLCqfA9UH5pI6DggwKEGuaPy7nCVQ8ZsiY5PIcrRvD1DzuY3qYL07NtIQcWnBSY/heikIFQ==}
@@ -3771,7 +3771,7 @@ snapshots:
 
   '@fontsource/plus-jakarta-sans@5.3.0': {}
 
-  '@fontsource/zen-maru-gothic@5.3.0': {}
+  '@fontsource/zen-kaku-gothic-new@5.3.0': {}
 
   '@img/sharp-darwin-arm64@0.33.5':
     optionalDependencies:

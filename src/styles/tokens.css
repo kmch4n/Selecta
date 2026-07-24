@@ -3,73 +3,72 @@
    The single source of literal values. Nothing outside this file may declare
    a raw colour, a raw length, or a font-family — see design.md.
 
-   Theme: Hum (playful genre). Light is the theme as published; dark is a
-   Selecta-specific derivation, because the project contract requires both
-   and Hum ships no dark definition. The dark rules are annotated inline.
+   Theme: custom "quiet" (modern-minimal genre). Light only — the project is
+   light-only by design (see design.md); there is no dark derivation.
+   Values are the OKLCH of the approved mockup hex, kept pixel-faithful.
    ========================================================================== */
 
 :root {
+    /* the app is light-only; tell the UA so its form controls, scrollbars, and
+       autofill don't render dark when the OS is in dark mode */
+    color-scheme: light;
+
     /* ----------------------------------------------------------------------
-       Colour — light
-       Cream paper pulled toward the pear hue (H 95). Never pure white: the
-       warmth is the theme. Ink is near-black with a cool tilt, never #000.
+       Colour — near-white paper, deep-navy ink. Not pure white, not pure
+       black: both read as chosen rather than defaulted.
        ---------------------------------------------------------------------- */
-    --color-paper: oklch(97% 0.012 95);
-    --color-paper-2: oklch(94% 0.016 95);
-    --color-paper-3: oklch(91% 0.020 95);
+    --color-paper: oklch(99.1% 0.002 248);   /* #fbfcfd */
+    --color-paper-2: oklch(96.9% 0.005 258); /* #f3f5f8 */
+    --color-paper-3: oklch(94.4% 0.008 254); /* #e9edf2 — empty track, key bg */
 
-    --color-ink: oklch(20% 0.012 250);
-    --color-ink-2: oklch(44% 0.010 250);
-    --color-rule: oklch(20% 0.012 250 / 0.14);
+    --color-ink: oklch(25.8% 0.030 257);     /* #1a2432 — text and primary fill */
+    --color-ink-2: oklch(50.6% 0.028 254);   /* #5a6675 — secondary text */
+    --color-rule: oklch(25.8% 0.030 257 / 0.14);
 
-    /* Accents. Each owns one kind of surface; they are never blended into a
-       gradient with each other. */
-    --color-accent: oklch(86% 0.18 95); /* pear — primary action, in-progress */
-    --color-accent-deep: oklch(70% 0.17 95); /* the button's thickness edge */
-    --color-accent-cast: oklch(76% 0.20 95 / 0.45); /* the button's ground shadow */
-    --color-accent-soft: oklch(86% 0.18 95 / 0.16);
+    /* One restrained indigo. It owns interactive intent — links, focus, the
+       current track segment, the selected-option border — and nothing else,
+       so its footprint stays well under 5% of any screen. */
+    --color-accent: oklch(39.1% 0.080 260);      /* #2b4570 */
+    --color-accent-deep: oklch(39.1% 0.080 260); /* same indigo: option/input borders */
+    --color-accent-soft: oklch(94.8% 0.012 265); /* #eaeef6 — selected-option tint */
 
-    --color-link: oklch(52% 0.15 235); /* cyan, darkened for text contrast */
-    --color-link-soft: oklch(66% 0.18 235 / 0.14);
+    --color-link: oklch(39.1% 0.080 260);
+    --color-link-soft: oklch(39.1% 0.080 260 / 0.12);
 
-    /* Semantic pair. Reserved before any decorative use: mint always means a
-       right answer, coral always means a wrong one. The celebration burst is
-       pear precisely so it cannot collide with either. */
-    --color-ok: oklch(62% 0.15 150);
-    --color-ok-soft: oklch(80% 0.16 150 / 0.20);
-    --color-ng: oklch(58% 0.21 18);
-    --color-ng-soft: oklch(68% 0.24 18 / 0.14);
+    /* Semantic pair — functional, separate from the accent. ok=green right,
+       ng=red wrong. The fill versions colour surfaces (borders, key chips,
+       track); the ink versions are darkened for text, with headroom on the
+       soft tints (6.6:1 / 7.3:1). */
+    --color-ok: oklch(47.7% 0.087 154);      /* #2f6b46 */
+    --color-ok-soft: oklch(94.7% 0.012 157); /* #e7f0ea */
+    --color-ng: oklch(49.0% 0.133 26);       /* #9e3b36 */
+    --color-ng-soft: oklch(94.4% 0.014 23);  /* #f6e9e8 */
 
-    /* The fill versions above are tuned to read as colour on a large surface.
-       Small text needs more contrast than a 12px label gets from them, so the
-       ink versions are darkened to clear 4.5:1 on paper and paper-2. */
-    --color-ok-ink: oklch(48% 0.13 150);
-    --color-ng-ink: oklch(50% 0.19 18);
+    --color-ok-ink: oklch(43.3% 0.086 153);  /* #245e39 — ok as text */
+    --color-ng-ink: oklch(42.8% 0.116 28);   /* #833029 — ng as text */
 
-    --color-focus: oklch(52% 0.15 235);
-    --color-on-accent: oklch(20% 0.012 250); /* ink on pear — pear is light */
+    --color-focus: oklch(39.1% 0.080 260);
+    --color-on-accent: oklch(99.1% 0.002 248); /* paper-white on ink/accent fills */
 
     /* Surfaces. Flat fills, no translucency: glassmorphism is banned. */
-    --color-surface: oklch(99% 0.008 95);
-    --color-field: oklch(99% 0.008 95);
+    --color-surface: oklch(100% 0 0);         /* card face, a hair above paper */
+    --color-field: oklch(100% 0 0);
 
-    --shadow-card: 0 1px 2px oklch(20% 0.012 250 / 0.06),
-        0 12px 32px -16px oklch(20% 0.012 250 / 0.14);
-    --shadow-card-hover: 0 2px 4px oklch(20% 0.012 250 / 0.07),
-        0 20px 44px -18px oklch(20% 0.012 250 / 0.20);
-    --shadow-hairline: 0 1px 2px oklch(20% 0.012 250 / 0.05);
-    --shadow-seg: 0 1px 3px oklch(20% 0.012 250 / 0.12);
-    --shadow-lift: 0 6px 14px -6px oklch(20% 0.012 250 / 0.22);
-    --cast-neutral: oklch(20% 0.012 250 / 0.18);
+    /* Shadows are minimal — the quiet direction leans on hairline borders, not
+       elevation. Tinted toward the navy ink so they read as chosen. */
+    --shadow-hairline: 0 1px 2px oklch(25.8% 0.030 257 / 0.04);
+    --shadow-card: 0 1px 2px oklch(25.8% 0.030 257 / 0.05);
+    --shadow-seg: 0 1px 2px oklch(25.8% 0.030 257 / 0.10);
+    --shadow-lift: 0 4px 12px -6px oklch(25.8% 0.030 257 / 0.14);
 
     /* ----------------------------------------------------------------------
        Type
        Latin resolves to Plus Jakarta Sans; Japanese has no glyphs there and
-       falls through to Zen Maru Gothic. Both are rounded humanist sans, so
-       the fallthrough is by design, not an accident.
+       falls through to Zen Kaku Gothic New — a clean, low-contrast gothic.
+       The rounded Zen Maru Gothic read too soft for the quiet direction.
        ---------------------------------------------------------------------- */
-    --font-display: "Plus Jakarta Sans", "Zen Maru Gothic", system-ui, sans-serif;
-    --font-body: "Plus Jakarta Sans", "Zen Maru Gothic", system-ui, sans-serif;
+    --font-display: "Plus Jakarta Sans", "Zen Kaku Gothic New", system-ui, sans-serif;
+    --font-body: "Plus Jakarta Sans", "Zen Kaku Gothic New", system-ui, sans-serif;
     --font-label: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
 
     --text-xs: 0.75rem;
@@ -108,15 +107,16 @@
     --measure: 34rem;
 
     /* ----------------------------------------------------------------------
-       Shape — Hum is the rounded theme. No square corners anywhere.
+       Shape — small, quiet radii. No pill on controls; the track keeps it.
        ---------------------------------------------------------------------- */
     /* one base height so an input and the button beside it agree */
     --control-h: 2.75rem;
 
-    --radius-card: 20px;
-    --radius-input: 12px;
-    --radius-chip: 10px;
-    --radius-pill: 999px;
+    --radius-btn: 8px;
+    --radius-input: 8px;
+    --radius-card: 14px;
+    --radius-chip: 6px;
+    --radius-pill: 999px; /* track segments only */
 
     /* ----------------------------------------------------------------------
        Motion
@@ -140,61 +140,6 @@
     --z-overlay: 30;
 }
 
-/* ==========================================================================
-   Colour — dark
-
-   Selecta-specific derivation of Hum. Three rules govern it:
-
-   1. The paper keeps the pear hue (H 95) and only drops in lightness. Going
-      neutral-grey here would strip out the warmth that makes Hum Hum.
-   2. Accents lose 6-8 points of lightness, and the palette narrows to pear
-      plus one. Five accents on a dark ground drifts into carnival, which the
-      theme bans outright.
-   3. The button's edge stays DARKER than its face. The edge reads against the
-      button, not against the page, and pear at 79% lightness is bright enough
-      that a darkened edge is plainly visible even here. A lighter edge would
-      light the button from below — that is shadow-glow, and it is banned.
-   ========================================================================== */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --color-paper: oklch(20% 0.014 95);
-        --color-paper-2: oklch(24% 0.016 95);
-        --color-paper-3: oklch(28% 0.018 95);
-
-        --color-ink: oklch(94% 0.010 95);
-        --color-ink-2: oklch(70% 0.012 95);
-        --color-rule: oklch(94% 0.010 95 / 0.16);
-
-        --color-accent: oklch(79% 0.17 95);
-        --color-accent-deep: oklch(62% 0.15 95);
-        --color-accent-cast: oklch(62% 0.15 95 / 0.35);
-        --color-accent-soft: oklch(79% 0.17 95 / 0.18);
-
-        --color-link: oklch(76% 0.14 235);
-        --color-link-soft: oklch(76% 0.14 235 / 0.16);
-
-        --color-ok: oklch(76% 0.15 150);
-        --color-ok-soft: oklch(76% 0.15 150 / 0.18);
-        --color-ng: oklch(70% 0.19 18);
-        --color-ng-soft: oklch(70% 0.19 18 / 0.16);
-
-        /* on dark the ink versions go lighter, not darker */
-        --color-ok-ink: oklch(84% 0.14 150);
-        --color-ng-ink: oklch(80% 0.16 18);
-
-        --color-focus: oklch(80% 0.13 235);
-        --color-on-accent: oklch(18% 0.012 250);
-
-        --color-surface: oklch(24% 0.016 95);
-        --color-field: oklch(17% 0.014 95);
-
-        --shadow-card: 0 1px 2px oklch(12% 0.010 250 / 0.30),
-            0 12px 32px -16px oklch(12% 0.010 250 / 0.55);
-        --shadow-card-hover: 0 2px 4px oklch(12% 0.010 250 / 0.34),
-            0 20px 44px -18px oklch(12% 0.010 250 / 0.62);
-        --shadow-hairline: 0 1px 2px oklch(12% 0.010 250 / 0.30);
-        --shadow-seg: 0 1px 3px oklch(12% 0.010 250 / 0.40);
-        --shadow-lift: 0 6px 14px -6px oklch(12% 0.010 250 / 0.55);
-        --cast-neutral: oklch(12% 0.010 250 / 0.45);
-    }
-}
+/* Light only, by design — there is no dark derivation. The warm-cream Hum
+   theme it replaced needed one; this quiet palette commits to a single
+   near-white world. See design.md. */

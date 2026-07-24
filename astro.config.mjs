@@ -16,10 +16,10 @@ export default defineConfig({
         injectRegister: 'script',
         workbox: {
             // Fonts are deliberately excluded from the precache manifest.
-            // Zen Maru Gothic ships its Japanese coverage as 122 unicode-range
-            // chunks per weight (~1.9 MB in total). Precaching is eager, so
+            // Zen Kaku Gothic New ships its Japanese coverage as 121 unicode-
+            // range chunks per weight (~1.3 MB each). Precaching is eager, so
             // globbing woff2 here would pull every chunk of every weight down
-            // on install — roughly 3.9 MB — even though a page renders only a
+            // on install — several MB — even though a page renders only a
             // handful of them. The runtime rule below caches each chunk the
             // browser actually requests, keeping offline support without the
             // install cost.
@@ -44,8 +44,8 @@ export default defineConfig({
             name: 'Selecta',
             short_name: 'Selecta',
             description: '4択クイズアプリ（Anki互換）',
-            theme_color: '#f9f5eb',
-            background_color: '#f9f5eb',
+            theme_color: '#fbfcfd',
+            background_color: '#fbfcfd',
             display: 'standalone',
             start_url: '/',
             icons: [

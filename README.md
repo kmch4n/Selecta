@@ -15,7 +15,8 @@ required. Selecta also converts between CSV, JSON, and Anki export formats.
 - **Format conversion** — CSV ⇄ JSON and Anki export → JSON, including an Excel-safe
   (BOM'd UTF-8) CSV output.
 - **PWA** — installable and offline-capable via a service worker.
-- **Light & dark themes** — follows the OS color scheme.
+- **A quiet, considered light theme** — near-white paper, deep-navy ink, one
+  restrained accent. Deliberately light-only.
 
 ## Getting Started
 
@@ -53,10 +54,10 @@ exactly four `options` and a `correct` index (0–3). The full schema is defined
 ## Tech Stack
 
 - [Astro 5](https://astro.build/) with TypeScript (strict)
-- A hand-written CSS design system, "Hum" — no CSS framework. Tokens live in
+- A hand-written CSS design system — no CSS framework. Tokens live in
   `src/styles/tokens.css`; the reasoning behind them is in [`design.md`](design.md)
-- Plus Jakarta Sans, Zen Maru Gothic, and JetBrains Mono, self-hosted so the app
-  stays offline-capable and no request leaves the origin
+- Plus Jakarta Sans, Zen Kaku Gothic New, and JetBrains Mono, self-hosted so the
+  app stays offline-capable and no request leaves the origin
 - [`@vite-pwa/astro`](https://vite-pwa-org.netlify.app/) for the service worker and manifest
 
 ## License

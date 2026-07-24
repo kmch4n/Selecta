@@ -10,67 +10,47 @@ inverted here.
 
 ## Genre
 
-playful
+modern-minimal — the quiet, Stripe/Linear register. Near-white paper, deep-navy
+ink, one restrained accent, generous space. Nothing decorative earns its place
+by being loud.
 
-## Theme — Hum, component scope only
+## Theme — custom "quiet"
 
-Hum is the catalog's theme for learning platforms and daily-curiosity apps,
-which is what Selecta is. But it is written for scrolling landing pages, and
-half its vocabulary — section bands, hero archetypes, pricing, social proof,
-footer rotation — has nothing to attach to in a two-screen app.
-
-So the adoption is deliberately partial:
-
-| Hum signature | Selecta |
-| --- | --- |
-| 1 · push-button physics | adopted — options and CTAs |
-| 4 · counter tick-up | adopted — the score |
-| 5 · character moment | adopted — the wordmark dot |
-| 6 · big rounded surfaces | adopted |
-| 7 · star-burst on success | adopted — a right answer |
-| 2 · multi-accent section bands | **not applicable** — no scrolling sections exist |
-| 3 · colour-shift card grid | **not applicable** — no card grid exists |
-
-That is five of seven. Hum asks for six. The shortfall is a recorded, deliberate
-deviation, not an oversight: inventing sections to host the missing two would be
-worse design than going without them.
-
-## Macrostructure family
-
-Selecta has only app pages. They must not share a shape.
-
-- `/` — **Marquee Hero**. Off-centre. The primary action is "try the sample";
-  loading your own file is the secondary route.
-- `/convert` — **Workbench**. An input pane and an output pane, side by side.
+A made-to-measure light palette, not a catalog theme. It replaced the warm-cream
+"Hum" (playful, pear-yellow, rounded) after that read as generic and, in its
+dark variant, as AI-shaped. The whole point of this theme is restraint.
 
 ## Colour
 
-Values live in `src/styles/tokens.css`. Nothing outside that file may declare a
-raw colour.
+Values live in `src/styles/tokens.css` as the OKLCH of these hex, kept
+pixel-faithful. Nothing outside that file may declare a raw colour.
 
-Three rules govern the palette:
+| role | hex | notes |
+| --- | --- | --- |
+| paper / paper-2 / paper-3 | `#fbfcfd` / `#f3f5f8` / `#e9edf2` | near-white, faint cool cast — never pure white |
+| ink / ink-2 | `#1a2432` / `#5a6675` | deep navy, never pure black; ink is also the primary fill |
+| rule | `#dde2e9` | hairline |
+| accent | `#2b4570` | one restrained indigo |
+| ok / ng | `#2f6b46` / `#9e3b36` | right / wrong (fills) |
+| ok-ink / ng-ink | `#245e39` / `#833029` | right / wrong as text (darker, for contrast) |
 
-1. **Semantics are reserved before decoration.** Mint always means a right
-   answer. Coral always means a wrong one. Pear means the primary action and the
-   current position. The success burst is pear, not Hum's stock coral, because
-   celebrating in the failure colour would be incoherent.
-2. **Never pure white paper, never pure black ink.** The cream carries the
-   theme's warmth; pure white drains it.
-3. **Accents never blend into a gradient with each other.**
+Three rules govern it:
 
-## Dark theme
+1. **The accent owns interactive intent only** — links, focus, the current track
+   segment, the selected-option border — and nothing else. Its footprint stays
+   well under 5% of any screen. The primary button is *ink*, not accent, so the
+   accent never has to carry a large fill.
+2. **Semantics are reserved before decoration.** Green always means a right
+   answer, red always means a wrong one; the accent is neither.
+3. **Never pure white paper, never pure black ink.** The faint cool cast and the
+   navy tilt are what keep the neutrals from reading as unconsidered.
 
-The project contract requires light and dark. Hum ships no dark definition, so
-this one is Selecta's own derivation, built on three rules:
+## Light only
 
-1. **The paper keeps the pear hue (H 95) and only loses lightness.** Going
-   neutral-grey would strip out the warmth that makes the theme itself.
-2. **The palette narrows to pear plus one, and accents lose 6–8 points of
-   lightness.** Five accents on a dark ground drifts into carnival, which the
-   theme bans.
-3. **The button's edge stays darker than its face, in both themes.** The edge
-   reads against the button, not against the page. A lighter edge would light
-   the button from below, which is the shadow-glow-on-dark anti-pattern.
+There is no dark theme, by design. `:root` declares `color-scheme: light` so the
+UA renders its own controls light even when the OS is dark. Do not add a
+`prefers-color-scheme: dark` block — the app commits to a single near-white
+world. (The project contract in `.codex/AGENTS.md` says the same.)
 
 ## Typography
 
@@ -78,40 +58,49 @@ Self-hosted via `@fontsource`, so nothing leaves the origin and the PWA still
 works offline.
 
 - **Display and body:** Plus Jakarta Sans 400 / 600 / 700 (Latin and figures)
-- **Japanese:** Zen Maru Gothic 400 / 700 — a rounded gothic, which matches the
-  theme's rounded-sans register. Latin resolves to Jakarta first; Japanese has
-  no glyphs there and falls through to Zen Maru. The fallthrough is the design,
-  not an accident.
+- **Japanese:** Zen Kaku Gothic New 400 / 700 — a clean, low-contrast gothic.
+  The rounded Zen Maru Gothic it replaced read too soft for the quiet direction.
+  Latin resolves to Jakarta first; Japanese falls through to Zen Kaku.
 - **Labels and figures:** JetBrains Mono 500, uppercase, tracked
 - Display tracking `-0.025em`, headings always roman — never italic
 
-Import the **chunked** entries (`400.css`, `700.css`), never the `japanese-*.css`
-ones. The chunked entries split coverage across 122 unicode-range slices the
-browser fetches on demand; a page typically loads about 20 of 244. The
-`japanese-*` entries are single ~1.4 MB files with no splitting.
+Import the **chunked** `@fontsource` entries (`400.css`, `700.css`), never the
+`japanese-*.css` ones. The chunked entries split coverage across ~121
+unicode-range slices the browser fetches on demand; a page loads only a handful.
 
-The type scale must keep real range. The old design capped its display at
-1.7 rem against a 1 rem body, and that flatness was the single largest reason it
-read as generated.
+## Japanese line-breaking
+
+This is a first-class concern, not an afterthought.
+
+- `html` sets `line-break: strict` so **all** text honours kinsoku: a line never
+  begins with `。`/`、` or a small kana (the `手元のフ／ァイル` break).
+- Headings keep `overflow-wrap: anywhere` as the overflow guard, so a long Latin
+  token in user-supplied quiz text can't push the page sideways.
+- The hero headline breaks **by phrase**: `word-break: keep-all` plus a `<wbr>`
+  at each phrase boundary, with `overflow-wrap: anywhere` as the last resort so a
+  phrase too long for a 320px line still wraps rather than clipping.
 
 ## Spacing
 
 A 4-point named scale in `tokens.css`. Pages use `var(--space-md)`, never a raw
 length.
 
+## Shape
+
+Small, quiet radii: buttons/inputs 8px, cards 14px, chips/keys 6px. Pills are
+reserved for the answer track. No large rounded corners anywhere.
+
 ## Motion
 
-- Easings: `--ease-press` for buttons, `--ease-spring` for lifts, `--ease-snap`
-  for arrivals, `--ease-out` otherwise. Never the browser default.
-- The press is the feedback: lift 2px on hover, press down 3px on `:active`.
-  No `scale()`, no overshoot on UI state.
+- Easings: `--ease-out` for state, `--ease-snap` for the track, `--ease-spring`
+  only for the one gentle score-counter pulse. Never the browser default.
+- Buttons and options press down 1px on `:active`; no chunky edge, no lift.
 - Focus rings appear instantly and are never transitioned.
-- One character moment per page. One burst per correct answer, never looping.
-
-**Reduced motion is not "no motion".** Spatial movement collapses; colour and
-opacity still carry state. Anything that conveys information must arrive at its
-real value — the score counter lands on the score, it does not freeze at zero.
-The same guarantee has to survive a hidden tab, where rAF is suspended.
+- The score counter ticks up once on the result screen, and must **land on its
+  real value** even under reduced motion or a hidden tab (rAF suspended) — it
+  never freezes at zero.
+- No decorative motion: the breathing wordmark dot and the correct-answer
+  star-burst were removed. Quiet does not celebrate.
 
 ## Microinteractions
 
@@ -121,26 +110,29 @@ The same guarantee has to survive a hidden tab, where rAF is suspended.
 
 ## CTA voice
 
-- Primary: pear push button, pill, one per moment
-- Secondary: soft (flat lift, no colour edge)
-- Tertiary: outline (hairline, fills on hover)
-- Labels are short enough never to wrap. A wrapped label is a bug, and
-  `white-space: nowrap` is not the fix — it just trades a wrap for a horizontal
-  scroll. Shorten the label.
+- Primary: ink-filled rectangle, white text — the one confident element
+- Secondary (`--soft`): filled paper chip with a hairline
+- Tertiary (`--outline`): transparent hairline, fills faintly on hover
+- The three tiers must stay visually distinct — a `--soft` and an `--outline`
+  sit side by side in `/convert`.
+- Labels are short enough never to wrap. A wrapped label is a bug; shorten it,
+  don't reach for `white-space: nowrap` (that trades a wrap for a scroll).
 
 ## What pages must share
 
-The wordmark and its character moment; the palette and its reserved semantics;
-the font stack; the CTA voice; the 4-point scale; the motion rules.
+The wordmark; the palette and its reserved semantics; the font stack; the CTA
+voice; the 4-point scale; the line-break rules; the motion rules.
 
 ## What pages may differ on
 
-Macrostructure, within the app-page family. Section rhythm and density.
+Macrostructure, within the app-page family: `/` is a Marquee Hero, `/convert` is
+a two-pane Workbench.
 
 ## Non-negotiables
 
-- No glassmorphism, in any genre.
-- No square corners. Cards 20px, inputs 12px, pills 999px.
+- No glassmorphism, in any form.
+- No dark theme.
+- No pill or large radius on controls.
 - No horizontal scroll at 320 / 375 / 414 / 768px. `overflow-x: clip` on both
   `html` and `body` — never `hidden`, which would break the sticky nav.
 - No decorative eyebrow over every section. Ordinal labels only where the
@@ -153,4 +145,4 @@ Macrostructure, within the app-page family. Section rhythm and density.
 
 The canonical token set lives at `src/styles/tokens.css` and is the source for
 any port of this system. It carries `--color-*`, `--font-*`, `--text-*`,
-`--space-*`, `--radius-*`, `--ease-*`, `--dur-*`, and `--z-*`, in both themes.
+`--space-*`, `--radius-*`, `--ease-*`, `--dur-*`, and `--z-*` — light only.
