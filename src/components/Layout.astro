@@ -46,6 +46,20 @@ import '../styles/main.css';
         <meta name="description" content={description} />
         <link rel="canonical" href={canonicalUrl} />
         <meta name="theme-color" content="#fbfcfd" />
+        {/* Apply the saved theme before first paint so dark never flashes light.
+            Light is the default: only an explicit stored "dark" opts in — the OS
+            preference is not consulted. Must stay is:inline and in <head>. */}
+        <script is:inline>
+            (function () {
+                try {
+                    if (localStorage.getItem("selecta.theme.v1") === "dark") {
+                        document.documentElement.dataset.theme = "dark";
+                        var m = document.querySelector('meta[name="theme-color"]');
+                        if (m) m.setAttribute("content", "#14171d");
+                    }
+                } catch (e) {}
+            })();
+        </script>
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Selecta" />
         <meta property="og:locale" content="ja_JP" />

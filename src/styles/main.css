@@ -208,6 +208,50 @@ button {
     text-decoration: none;
 }
 
+/* Theme toggle — a quiet icon button, same hover cloth as a nav link. */
+.nav__theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-left: var(--space-3xs);
+    color: var(--color-ink-2);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-btn);
+    cursor: pointer;
+    transition: color var(--dur-short) var(--ease-out),
+        background-color var(--dur-short) var(--ease-out);
+}
+
+.nav__theme-toggle:hover {
+    color: var(--color-ink);
+    background: var(--color-paper-2);
+}
+
+.nav__theme-toggle:active {
+    transform: translateY(1px);
+}
+
+.nav__theme-toggle svg {
+    width: 1.15rem;
+    height: 1.15rem;
+}
+
+/* Show the icon for the theme you'd switch TO: a moon in light, a sun in dark. */
+.nav__theme-toggle .icon-sun {
+    display: none;
+}
+
+:root[data-theme="dark"] .nav__theme-toggle .icon-sun {
+    display: block;
+}
+
+:root[data-theme="dark"] .nav__theme-toggle .icon-moon {
+    display: none;
+}
+
 /* --------------------------------------------------------------------------
    Buttons — three quiet tiers. Primary is an ink-filled rectangle (the
    Stripe/Linear voice); secondary is a filled paper chip; tertiary is a bare
@@ -237,8 +281,8 @@ button {
 }
 
 .btn:hover {
-    background: color-mix(in oklch, var(--color-ink) 88%, white);
-    border-color: color-mix(in oklch, var(--color-ink) 88%, white);
+    background: var(--color-ink-hover);
+    border-color: var(--color-ink-hover);
     text-decoration: none;
 }
 

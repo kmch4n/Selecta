@@ -24,6 +24,10 @@
     --color-ink: oklch(25.8% 0.030 257);     /* #1a2432 — text and primary fill */
     --color-ink-2: oklch(50.6% 0.028 254);   /* #5a6675 — secondary text */
     --color-rule: oklch(25.8% 0.030 257 / 0.14);
+    /* the primary (ink-filled) button lightens toward paper-white on hover.
+       tokenised so the dark theme can invert the direction — main.css must not
+       hardcode the mix target. */
+    --color-ink-hover: color-mix(in oklch, var(--color-ink) 88%, white);
 
     /* One restrained indigo. It owns interactive intent — links, focus, the
        current track segment, the selected-option border — and nothing else,
@@ -140,6 +144,61 @@
     --z-overlay: 30;
 }
 
-/* Light only, by design — there is no dark derivation. The warm-cream Hum
-   theme it replaced needed one; this quiet palette commits to a single
-   near-white world. See design.md. */
+/* ==========================================================================
+   Dark theme — opt-in via data-theme="dark" on <html>. Light is the default
+   and the app's identity; this is not derived by inversion but designed to the
+   same three rules as the light palette (see design.md):
+   the accent owns interactive intent only, the ok/ng semantics stay reserved,
+   and neither pole is pure — near-black navy paper, near-white ink.
+   Light :root above is never touched by this block.
+   ========================================================================== */
+:root[data-theme="dark"] {
+    /* follow into dark so UA form controls, scrollbars, and autofill match */
+    color-scheme: dark;
+
+    /* Paper — near-black navy, never pure black. Steps rise in lightness the
+       way the light steps fall. */
+    --color-paper: oklch(20.0% 0.020 257);
+    --color-paper-2: oklch(24.0% 0.020 257);
+    --color-paper-3: oklch(28.0% 0.020 254); /* empty track, key bg */
+
+    /* Ink — near-white, faint cool cast, never pure white. */
+    --color-ink: oklch(93.0% 0.006 250);     /* text and primary fill */
+    --color-ink-2: oklch(72.0% 0.020 254);   /* secondary text */
+    --color-rule: oklch(93.0% 0.006 250 / 0.16);
+    /* on dark the ink-filled button is a near-white chip; hover darkens it
+       slightly (toward paper), the opposite direction from light. */
+    --color-ink-hover: color-mix(in oklch, var(--color-ink) 88%, black);
+
+    /* Accent — the same indigo, lifted in lightness so it reads on the dark
+       paper. Still confined to interactive intent. */
+    --color-accent: oklch(72.0% 0.090 262);
+    --color-accent-deep: oklch(72.0% 0.090 262);
+    --color-accent-soft: oklch(32.0% 0.045 262); /* selected-option tint */
+
+    --color-link: oklch(74.0% 0.090 262);
+    --color-link-soft: oklch(74.0% 0.090 262 / 0.18);
+
+    /* Semantic pair — brightened for legibility on dark surfaces. fill colours
+       surfaces; the ink versions are lightened for text on the soft tints. */
+    --color-ok: oklch(72.0% 0.120 154);
+    --color-ok-soft: oklch(30.0% 0.045 156);
+    --color-ng: oklch(68.0% 0.140 26);
+    --color-ng-soft: oklch(30.0% 0.055 24);
+
+    --color-ok-ink: oklch(82.0% 0.110 154);  /* ok as text */
+    --color-ng-ink: oklch(80.0% 0.120 26);   /* ng as text */
+
+    --color-focus: oklch(74.0% 0.090 262);
+    --color-on-accent: oklch(20.0% 0.020 257); /* dark text on near-white fills */
+
+    /* Surfaces sit a hair above paper — flat fills, no translucency. */
+    --color-surface: oklch(24.0% 0.018 257);
+    --color-field: oklch(23.0% 0.018 257);
+
+    /* Shadows read on dark only if black-based and a touch heavier. */
+    --shadow-hairline: 0 1px 2px oklch(0% 0 0 / 0.30);
+    --shadow-card: 0 1px 2px oklch(0% 0 0 / 0.35);
+    --shadow-seg: 0 1px 2px oklch(0% 0 0 / 0.45);
+    --shadow-lift: 0 4px 12px -6px oklch(0% 0 0 / 0.55);
+}

@@ -12,5 +12,92 @@ const { showConvertLink = false, showQuizLink = false } = Astro.props;
     <div class="nav__links">
         {showQuizLink && <a href="/" class="nav__link">クイズ</a>}
         {showConvertLink && <a href="/convert" class="nav__link">変換ツール</a>}
+        <button
+            type="button"
+            class="nav__theme-toggle"
+            aria-label="ダークモードに切り替え"
+            aria-pressed="false"
+        >
+            <svg
+                class="icon-moon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+            >
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <svg
+                class="icon-sun"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+            >
+                <circle cx="12" cy="12" r="5"></circle>
+                <path
+                    d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+                ></path>
+            </svg>
+        </button>
     </div>
 </nav>
+
+<script>
+    // The pre-paint script in Layout.astro has already set data-theme before
+    // this runs; here we only reflect it into the button and wire the toggle.
+    const THEME_KEY = "selecta.theme.v1";
+    const META_COLOR = { light: "#fbfcfd", dark: "#14171d" } as const;
+    type Theme = keyof typeof META_COLOR;
+
+    class ThemeToggle {
+        private readonly button: HTMLButtonElement;
+
+        constructor(button: HTMLButtonElement) {
+            this.button = button;
+            this.sync();
+            this.button.addEventListener("click", () => this.toggle());
+        }
+
+        private current(): Theme {
+            return document.documentElement.dataset.theme === "dark"
+                ? "dark"
+                : "light";
+        }
+
+        private sync(): void {
+            const isDark = this.current() === "dark";
+            this.button.setAttribute("aria-pressed", String(isDark));
+            this.button.setAttribute(
+                "aria-label",
+                isDark ? "ライトモードに切り替え" : "ダークモードに切り替え",
+            );
+        }
+
+        private toggle(): void {
+            const next: Theme = this.current() === "dark" ? "light" : "dark";
+            document.documentElement.dataset.theme = next;
+            try {
+                localStorage.setItem(THEME_KEY, next);
+            } catch {
+                // storage may be blocked; the theme still applies for this view
+            }
+            const meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) {
+                meta.setAttribute("content", META_COLOR[next]);
+            }
+            this.sync();
+        }
+    }
+
+    const el = document.querySelector<HTMLButtonElement>(".nav__theme-toggle");
+    if (el) {
+        new ThemeToggle(el);
+    }
+</script>
