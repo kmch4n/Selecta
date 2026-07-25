@@ -26,6 +26,9 @@ CSV / JSON / Anki の相互変換も持つ。すべてクライアントサイ�
   **ライト専用**（ダークテーマは持たない。過去の Hum/Frost は撤去済みで、復活させない）。
 - **PWA**: `@vite-pwa/astro`（autoUpdate, Workbox）。**SW の登録は `Layout.astro` の手動配線が前提** —
   自動注入は Astro では効かない。詳細は `.memory/pwa-registration-wiring.md`。
+- **復習ストア**: 間違えた設問を `localStorage`（キー `selecta.review.v1`）に永続化し、ホームの
+  復習セクションと終了画面の再挑戦で出題する。設問の識別は **問題文＋選択肢の内容ハッシュ**（設問
+  `id` には依存しない）。誤答で苦手リストに入り、正解で外れる。詳細は `.memory/review-store.md`。
 
 ## Layout
 
