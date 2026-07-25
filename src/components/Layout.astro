@@ -1,9 +1,16 @@
 ---
 export interface Props {
     title: string;
+    description?: string;
 }
 
-const { title } = Astro.props;
+const { title, description = 'JSON や URL からクイズを読み込み、ブラウザだけで解いて、間違えた問題を復習する。選択式クイズ PWA。' } = Astro.props;
+
+// Absolute URLs for canonical / OG cards. Astro.site is set in astro.config.mjs;
+// crawlers require absolute URLs, so we resolve against it.
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
+const ogImageUrl = new URL('/og.png', Astro.site);
+
 import Footer from './Footer.astro';
 
 // The PWA integration generates sw.js, registerSW.js, and the web manifest, but
@@ -36,12 +43,23 @@ import '../styles/main.css';
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="generator" content={Astro.generator} />
         <title>{title}</title>
-        <meta name="description" content="4択クイズアプリ（Anki互換）" />
+        <meta name="description" content={description} />
+        <link rel="canonical" href={canonicalUrl} />
         <meta name="theme-color" content="#fbfcfd" />
         <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Selecta" />
+        <meta property="og:locale" content="ja_JP" />
+        <meta property="og:url" content={canonicalUrl} />
         <meta property="og:title" content={title} />
-        <meta property="og:description" content="4択クイズアプリ（Anki互換）" />
-        <meta name="twitter:card" content="summary" />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content={ogImageUrl} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="Selecta — 選択式クイズを、手元のファイルから。" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={ogImageUrl} />
         {/* pwaInfo is undefined on the dev server, where the PWA is off on
             purpose — a service worker caching between edits costs more than it
             gives. Both fragments are guarded so dev renders without them. */}

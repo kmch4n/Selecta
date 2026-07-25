@@ -4,7 +4,7 @@ A multiple-choice quiz PWA with Anki-compatible data. Load a quiz from a JSON fi
 a URL, answer in the browser, and review your results — all client-side, no server
 required. Selecta also converts between CSV, JSON, and Anki export formats.
 
-> This README is an initial draft and will be refined later.
+Live at **[selecta.kmchan.jp](https://selecta.kmchan.jp/)**.
 
 ## Features
 

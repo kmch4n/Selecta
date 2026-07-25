@@ -4,6 +4,7 @@ import AstroPWA from '@vite-pwa/astro';
 
 // https://astro.build/config
 export default defineConfig({
+    site: 'https://selecta.kmchan.jp',
     integrations: [AstroPWA({
         registerType: 'autoUpdate',
         // Must be explicit. vite-plugin-pwa's default ('auto') injects the
@@ -43,7 +44,7 @@ export default defineConfig({
         manifest: {
             name: 'Selecta',
             short_name: 'Selecta',
-            description: '4択クイズアプリ（Anki互換）',
+            description: 'JSON や URL からクイズを読み込み、ブラウザだけで解いて、間違えた問題を復習する。選択式クイズ PWA。',
             theme_color: '#fbfcfd',
             background_color: '#fbfcfd',
             display: 'standalone',
