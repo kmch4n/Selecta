@@ -19,4 +19,5 @@
 - [pwa-registration-wiring](pwa-registration-wiring.md) — SW 登録は Layout.astro の手動配線が前提。設定の存在を動作の証拠にしない
 - [font-subset-strategy](font-subset-strategy.md) — 和文はチャンク分割版を import し、woff2 は precache しない
 - [design-system-is-design-md](design-system-is-design-md.md) — 色・余白・書体の判断は `design.md` に従う
+- [theme-toggle](theme-toggle.md) — ダークは data-theme + localStorage のオプトイン。既定ライト・OS 非追従
 - [review-store](review-store.md) — 苦手復習は設問の内容ハッシュで localStorage に永続化する

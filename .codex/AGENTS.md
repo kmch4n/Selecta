@@ -25,7 +25,10 @@ CSV / JSON / Anki の相互変換も持つ。すべてクライアントサイ�
   藍一色）。CSS フレームワークは使わない（Bulma は廃止済み）。リテラル値は
   `src/styles/tokens.css` にのみ置き、`src/styles/main.css` はそれを参照する。判断の根拠はルートの
   [`design.md`](../design.md) にある。**glassmorphism は禁止。**
-  **ライト専用**（ダークテーマは持たない。過去の Hum/Frost は撤去済みで、復活させない）。
+  **ライトが既定**。ダークは `<html data-theme="dark">` によるオプトインのトグルで、
+  `:root[data-theme="dark"]` が `tokens.css` の色・影トークンを再宣言する（反転ではなく設計値）。
+  切替は NavBar のボタン、選択は `localStorage`（`selecta.theme.v1`）。**OS 設定には追従しない**
+  （`prefers-color-scheme` は見ない）。過去の Hum/Frost パレットは撤去済みで復活させない。
 - **PWA**: `@vite-pwa/astro`（autoUpdate, Workbox）。**SW の登録は `Layout.astro` の手動配線が前提** —
   自動注入は Astro では効かない。詳細は `.memory/pwa-registration-wiring.md`。
 - **復習ストア**: 間違えた設問を `localStorage`（キー `selecta.review.v1`）に永続化し、ホームの
@@ -48,7 +51,9 @@ CSV / JSON / Anki の相互変換も持つ。すべてクライアントサイ�
   4 択固定のまま**（CSV は `option1`–`option4` の 4 列、Anki 取り込みも 4 択前提）。
 - **デザイン**: **デザインを触る前に `design.md` を読む。** 色・余白・書体は `tokens.css` の
   トークン経由でのみ扱い、`main.css` や `.astro` に生の値を直書きしない。
-  **ライト専用**（ダークテーマは追加しない。`prefers-color-scheme: dark` のブロックを足さない）。
+  **ライトが既定・ダークはオプトイン**。ダーク値は `tokens.css` の `:root[data-theme="dark"]`
+  にのみ足し、light の `:root` は変更しない。**`prefers-color-scheme` には追従しない**
+  （OS 追従ブロックを足さない）。詳細は `.memory/theme-toggle.md`。
 - **ブランド**: 表記は "Selecta" のみ。旧名 "AnySlash" / "anyslash" / "Osumi Akari" / "oageo" は使わない。
   作者は kmch4n（https://kmchan.jp）、リポジトリは https://github.com/kmch4n/Selecta。
 - **エンコード**: すべて UTF-8（BOM なし）/ LF。

@@ -45,12 +45,25 @@ Three rules govern it:
 3. **Never pure white paper, never pure black ink.** The faint cool cast and the
    navy tilt are what keep the neutrals from reading as unconsidered.
 
-## Light only
+## Light by default, dark on request
 
-There is no dark theme, by design. `:root` declares `color-scheme: light` so the
-UA renders its own controls light even when the OS is dark. Do not add a
-`prefers-color-scheme: dark` block — the app commits to a single near-white
-world. (The project contract in `.codex/AGENTS.md` says the same.)
+Light is the default and the app's identity — the near-white world is what
+Selecta looks like unless the user says otherwise. A dark theme rides alongside
+it as an opt-in, toggled from the nav.
+
+- The switch is a `data-theme="dark"` attribute on `<html>`. `:root[data-theme=
+  "dark"]` in `tokens.css` redeclares every `--color-*` and `--shadow-*`; the
+  light `:root` is never touched.
+- **Dark is designed, not inverted.** It obeys the same three colour rules as
+  light (accent owns interactive intent only; ok/ng semantics stay reserved;
+  neither pole is pure — near-black navy paper, near-white ink).
+- The default `:root` keeps `color-scheme: light`; the dark block sets
+  `color-scheme: dark` so the UA controls follow the active theme.
+- **The OS preference is not consulted.** Do not add a `prefers-color-scheme`
+  block — only an explicit stored choice (`localStorage` key `selecta.theme.v1`)
+  opts into dark. With no stored choice the app renders light even on a dark OS.
+- A pre-paint `is:inline` script in `Layout.astro` applies the stored theme
+  before first paint, so dark never flashes light on load.
 
 ## Typography
 
@@ -131,7 +144,7 @@ a two-pane Workbench.
 ## Non-negotiables
 
 - No glassmorphism, in any form.
-- No dark theme.
+- Light is the default; dark is an opt-in toggle only, never OS-driven.
 - No pill or large radius on controls.
 - No horizontal scroll at 320 / 375 / 414 / 768px. `overflow-x: clip` on both
   `html` and `body` — never `hidden`, which would break the sticky nav.
@@ -145,4 +158,6 @@ a two-pane Workbench.
 
 The canonical token set lives at `src/styles/tokens.css` and is the source for
 any port of this system. It carries `--color-*`, `--font-*`, `--text-*`,
-`--space-*`, `--radius-*`, `--ease-*`, `--dur-*`, and `--z-*` — light only.
+`--space-*`, `--radius-*`, `--ease-*`, `--dur-*`, and `--z-*`. The default
+`:root` is the light theme; `:root[data-theme="dark"]` redeclares the colour and
+shadow tokens for the opt-in dark theme.
