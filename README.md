@@ -1,6 +1,6 @@
 # Selecta
 
-A four-choice quiz PWA with Anki-compatible data. Load a quiz from a JSON file or
+A multiple-choice quiz PWA with Anki-compatible data. Load a quiz from a JSON file or
 a URL, answer in the browser, and review your results — all client-side, no server
 required. Selecta also converts between CSV, JSON, and Anki export formats.
 
@@ -8,8 +8,9 @@ required. Selecta also converts between CSV, JSON, and Anki export formats.
 
 ## Features
 
-- **Quiz player** — answer four-choice questions with an answer track that fills in
-  by correct/incorrect as you go, plus keyboard shortcuts (`1`–`4`, `Enter`).
+- **Quiz player** — answer multiple-choice questions (two or more options) with an
+  answer track that fills in by correct/incorrect as you go, plus keyboard shortcuts
+  (number keys `1`–`9`, `0` for a tenth option, `Enter`).
 - **Flexible loading** — pick a local JSON file, or supply one or more URLs to run
   several quiz sets back to back.
 - **Shareable links** — append `?source=<quiz-url>` to auto-load a quiz on open, so
@@ -35,7 +36,8 @@ pnpm run preview   # preview the production build locally
 ## Quiz Data Format
 
 Quiz files are JSON with a `meta` block and a `questions` array. Each question has
-exactly four `options` and a `correct` index (0–3). The full schema is defined in
+two or more `options` and a `correct` index (0-based, less than the option count).
+The converter tools still emit and read four-option CSV. The full schema is defined in
 [`quiz-schema.json`](quiz-schema.json), and a working sample lives at
 [`public/sample-quiz.json`](public/sample-quiz.json).
 

@@ -9,7 +9,7 @@ import NavBar from '../components/NavBar.astro';
     <main class="shell">
         <section id="file-input-section">
             <div class="hero">
-                <h1 class="hero__title">4択クイズを、<wbr />手元のファイルから。</h1>
+                <h1 class="hero__title">選択式クイズを、<wbr />手元のファイルから。</h1>
                 <p class="hero__lede">
                     読み込みも採点もブラウザの中だけで完結します。ファイルはどこにも送られません。
                 </p>
@@ -462,14 +462,20 @@ import NavBar from '../components/NavBar.astro';
                     return;
                 }
 
-                // 1-4キーでオプション選択
-                if (event.key >= '1' && event.key <= '4') {
-                    event.preventDefault();
-                    const optionIndex = parseInt(event.key) - 1;
-
+                // 数字キーでオプション選択。選択肢は可変数なので、1-9 を
+                // 1〜9番目に、0 を10番目に割り当て、実際の選択肢数で範囲を絞る。
+                // 11個以上ある場合、それらはクリック / タップでのみ選べる。
+                const digit = event.key;
+                if (digit >= '0' && digit <= '9') {
                     // 既に回答が確定済みの場合は無効
                     if (this.isConfirmed) return;
 
+                    const optionIndex = digit === '0' ? 9 : parseInt(digit) - 1;
+                    const optionCount =
+                        this.quizData.questions[this.currentQuestionIndex].options.length;
+                    if (optionIndex >= optionCount) return;
+
+                    event.preventDefault();
                     this.selectedOption = optionIndex;
                     this.highlightSelectedOption();
                 }

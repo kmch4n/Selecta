@@ -6,7 +6,7 @@
 
 ## Project
 
-Selecta — Anki 互換の 4 択クイズ PWA。JSON ファイルまたは URL でクイズを読み込みブラウザで解答する。
+Selecta — Anki 互換の選択式クイズ PWA。JSON ファイルまたは URL でクイズを読み込みブラウザで解答する。
 CSV / JSON / Anki の相互変換も持つ。すべてクライアントサイドで完結し、サーバは不要。
 
 ## Commands (PNPM)
@@ -40,7 +40,10 @@ CSV / JSON / Anki の相互変換も持つ。すべてクライアントサイ�
 
 ## 契約 (Conventions)
 
-- **データ契約**: `options` はちょうど 4 要素、`correct` は 0–3 のインデックス。`quiz-schema.json` に準拠。
+- **データ契約**: プレイヤーは可変選択肢。`options` は **2 要素以上**、`correct` は 0 始まりで
+  `options.length` 未満のインデックス。`quiz-schema.json` に準拠。キーボードは `1`–`9` が 1〜9 番目、
+  `0` が 10 番目、11 個以上はクリック / タップのみ。**ただし変換ツール（`convert.astro`）は
+  4 択固定のまま**（CSV は `option1`–`option4` の 4 列、Anki 取り込みも 4 択前提）。
 - **デザイン**: **デザインを触る前に `design.md` を読む。** 色・余白・書体は `tokens.css` の
   トークン経由でのみ扱い、`main.css` や `.astro` に生の値を直書きしない。
   **ライト専用**（ダークテーマは追加しない。`prefers-color-scheme: dark` のブロックを足さない）。
