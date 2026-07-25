@@ -1,70 +1,72 @@
+<div align="center">
+
+<img src="public/favicon.svg" alt="Selecta" width="72" height="72" />
+
 # Selecta
 
-A multiple-choice quiz PWA with Anki-compatible data. Load a quiz from a JSON file or
-a URL, answer in the browser, and review your results — all client-side, no server
-required. Selecta also converts between CSV, JSON, and Anki export formats.
+**手元のファイルや URL から、選択式クイズを。**
 
-Live at **[selecta.kmchan.jp](https://selecta.kmchan.jp/)**.
+読み込みも採点もブラウザの中だけで完結する、Anki 互換の選択式クイズ PWA。
 
-## Features
+[![Astro](https://img.shields.io/badge/Astro-5-BC52EE?logo=astro&logoColor=white)](https://astro.build/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![PWA](https://img.shields.io/badge/PWA-offline--ready-5A0FC8?logo=pwa&logoColor=white)](https://vite-pwa-org.netlify.app/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-1a2432)](LICENSE)
 
-- **Quiz player** — answer multiple-choice questions (two or more options) with an
-  answer track that fills in by correct/incorrect as you go, plus keyboard shortcuts
-  (number keys `1`–`9`, `0` for a tenth option, `Enter`).
-- **Flexible loading** — pick a local JSON file, or supply one or more URLs to run
-  several quiz sets back to back.
-- **Shareable links** — append `?source=<quiz-url>` to auto-load a quiz on open, so
-  sharing a set is just sharing a link. Repeat the parameter
-  (`?source=a.json&source=b.json`) to chain several.
-- **Format conversion** — CSV ⇄ JSON and Anki export → JSON, including an Excel-safe
-  (BOM'd UTF-8) CSV output.
-- **PWA** — installable and offline-capable via a service worker.
-- **A quiet, considered light theme** — near-white paper, deep-navy ink, one
-  restrained accent. Deliberately light-only.
+[**selecta.kmchan.jp**](https://selecta.kmchan.jp/) で公開中
 
-## Getting Started
+</div>
 
-Selecta uses [PNPM](https://pnpm.io/).
+![Selecta のホーム画面 — ヒーローとクイズローダー](docs/screenshots/home.png)
+
+Selecta は、選択式クイズを JSON ファイルや URL から読み込み、ブラウザで解いて
+復習するための PWA です。読み込み・採点・復習まですべてクライアントサイドで完結し、
+サーバは不要。ファイルはブラウザの外に出ません。CSV・JSON・Anki
+エクスポートの相互変換ツールも備えています。
+
+> [!TIP]
+> `?source=<クイズのURL>` を付けたリンクを開くだけで、そのクイズが自動で始まります。
+> 誰かに問題集を渡すときは、リンクを送るだけで済みます。
+
+## 特長
+
+- **選択式プレイヤー** — **2 択以上**の設問に解答。正誤で埋まっていくアンサートラックと、
+  キーボードショートカット（数字キー `1`–`9`、10 番目は `0`、`Enter`）を備える。
+- **柔軟な読み込み** — ローカルの JSON ファイルを選ぶか、1 つ以上の URL を渡して
+  複数のクイズセットを連続で出題する。
+- **共有リンク** — `?source=` で自動読み込み。パラメータを繰り返せば
+  （`?source=a.json&source=b.json`）複数を連結できる。
+- **間違いだけ復習** — 誤答した設問を内容ハッシュで記録し、あとから苦手だけを解き直せる。
+- **形式変換** — CSV ⇄ JSON、Anki エクスポート → JSON。Excel で開ける
+  （BOM 付き UTF-8）CSV 出力にも対応。
+- **PWA** — インストール可能・オフライン対応。
+- **quiet なライトテーマ** — 近白の紙・濃紺の墨・一色の差し色。あえてライト専用。
+
+|             クイズを解く             |             形式を変換する             |
+| :----------------------------------: | :------------------------------------: |
+| ![設問画面](docs/screenshots/quiz.png) | ![変換ツール](docs/screenshots/convert.png) |
+
+## クイックスタート
+
+Selecta は [PNPM](https://pnpm.io/) を使います。
 
 ```sh
-pnpm install       # install dependencies
-pnpm run dev       # start the dev server at http://localhost:4321
-pnpm run build     # build the production site to ./dist/
-pnpm run preview   # preview the production build locally
+pnpm install
+pnpm run dev       # http://localhost:4321
 ```
 
-## Quiz Data Format
+> [!NOTE]
+> クイズを作る・遊ぶだけならインストールは不要です。公開サイトにファイルや URL を
+> 渡すだけで動きます。上記はローカルで開発する場合の手順です。
 
-Quiz files are JSON with a `meta` block and a `questions` array. Each question has
-two or more `options` and a `correct` index (0-based, less than the option count).
-The converter tools still emit and read four-option CSV. The full schema is defined in
-[`quiz-schema.json`](quiz-schema.json), and a working sample lives at
-[`public/sample-quiz.json`](public/sample-quiz.json).
+## ドキュメント
 
-```json
-{
-    "meta": { "title": "Sample Quiz" },
-    "questions": [
-        {
-            "id": "q-1",
-            "question": "Which tag creates a link in HTML?",
-            "options": ["<link>", "<a>", "<href>", "<url>"],
-            "correct": 1,
-            "explanation": "The <a> tag's href attribute defines the link target."
-        }
-    ]
-}
-```
+| ドキュメント | 内容 |
+| --- | --- |
+| [クイズデータ形式](docs/quiz-format.md) | JSON のスキーマと変換ツールの仕様 |
+| [開発ガイド](docs/development.md) | セットアップ・技術スタック・アーキテクチャ概要 |
+| [デザイン仕様](design.md) | デザインシステムの判断根拠（英語） |
 
-## Tech Stack
+---
 
-- [Astro 5](https://astro.build/) with TypeScript (strict)
-- A hand-written CSS design system — no CSS framework. Tokens live in
-  `src/styles/tokens.css`; the reasoning behind them is in [`design.md`](design.md)
-- Plus Jakarta Sans, Zen Kaku Gothic New, and JetBrains Mono, self-hosted so the
-  app stays offline-capable and no request leaves the origin
-- [`@vite-pwa/astro`](https://vite-pwa-org.netlify.app/) for the service worker and manifest
-
-## License
-
-[MIT](LICENSE) © kmch4n
+MIT ライセンス · © [kmch4n](https://kmchan.jp)
