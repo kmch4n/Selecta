@@ -31,3 +31,6 @@ pnpm-debug.log*
 
 # local launch script
 start.ps1
+
+# playwright mcp scratch output
+.playwright-mcp/
