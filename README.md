@@ -12,6 +12,9 @@ required. Selecta also converts between CSV, JSON, and Anki export formats.
   by correct/incorrect as you go, plus keyboard shortcuts (`1`–`4`, `Enter`).
 - **Flexible loading** — pick a local JSON file, or supply one or more URLs to run
   several quiz sets back to back.
+- **Shareable links** — append `?source=<quiz-url>` to auto-load a quiz on open, so
+  sharing a set is just sharing a link. Repeat the parameter
+  (`?source=a.json&source=b.json`) to chain several.
 - **Format conversion** — CSV ⇄ JSON and Anki export → JSON, including an Excel-safe
   (BOM'd UTF-8) CSV output.
 - **PWA** — installable and offline-capable via a service worker.
