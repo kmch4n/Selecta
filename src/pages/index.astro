@@ -281,6 +281,30 @@ import NavBar from '../components/NavBar.astro';
             constructor() {
                 this.setupEventListeners();
                 this.renderReviewSection();
+                this.autoLoadFromQuery();
+            }
+
+            /**
+             * Auto-load quizzes named in the URL, e.g. ?source=https://…/quiz.json
+             * (repeat the parameter for several: ?source=a&source=b). A shared link
+             * then starts the quiz with no typing — handing someone a problem set is
+             * just handing them a URL.
+             */
+            private autoLoadFromQuery() {
+                const sources = new URLSearchParams(location.search)
+                    .getAll('source')
+                    .map((s) => s.trim())
+                    .filter(Boolean);
+
+                if (sources.length === 0) return;
+
+                // Mirror the sources into the URL tab so that, if the auto-load
+                // fails (bad link, offline, CORS), the recipient still sees them
+                // and can retry with the button.
+                this.switchSourceTab('url');
+                (document.getElementById('quiz-urls') as HTMLTextAreaElement).value = sources.join('\n');
+
+                void this.loadQuizzesFromUrls(sources);
             }
 
             private setupEventListeners() {
