@@ -54,6 +54,18 @@ import NavBar from '../components/NavBar.astro';
                     </div>
                 </div>
             </div>
+
+            <div class="card" id="review-section" style="display: none;">
+                <div class="loader__head">
+                    <h2 class="loader__title">苦手な問題を復習する</h2>
+                    <span class="label-mono" id="review-count"></span>
+                </div>
+                <p class="help" id="review-lede"></p>
+                <div class="btn-row">
+                    <button type="button" class="btn" id="review-start-btn">復習する</button>
+                    <button type="button" class="btn btn--outline" id="review-reset-btn">苦手リストをリセット</button>
+                </div>
+            </div>
         </section>
 
         <section id="quiz-section" style="display: none;">
@@ -104,6 +116,155 @@ import NavBar from '../components/NavBar.astro';
             }>;
         }
 
+        type QuizQuestion = QuizData['questions'][number];
+
+        interface ReviewRecord {
+            q: string;
+            options: string[];
+            correct: number;
+            explanation?: string;
+            deck?: string;
+            title: string;
+            wrong: number; // total misses, kept as a stat and never decremented
+            seen: number;
+            weak: boolean; // currently in the review list
+            firstMissed: number;
+            lastSeen: number;
+        }
+
+        interface ReviewData {
+            version: number;
+            records: Record<string, ReviewRecord>;
+        }
+
+        /**
+         * Persists the questions the user has missed so they can be reviewed
+         * across sessions. Records are keyed by the *content* of a question
+         * (text + options), not its `id`, so the same question is recognised
+         * regardless of which file or title it arrives in — and an `id`
+         * collision between two unrelated files can't merge distinct questions.
+         * A missed question enters the weak list; answering it correctly clears
+         * the flag while the running miss count is preserved.
+         */
+        class ReviewStore {
+            private static readonly KEY = 'selecta.review.v1';
+            private static readonly VERSION = 1;
+
+            private data: ReviewData = { version: ReviewStore.VERSION, records: {} };
+            private available = true;
+
+            constructor() {
+                this.load();
+            }
+
+            private load() {
+                try {
+                    const raw = localStorage.getItem(ReviewStore.KEY);
+                    if (raw) {
+                        const parsed = JSON.parse(raw) as ReviewData;
+                        if (parsed && typeof parsed === 'object' && parsed.records) {
+                            this.data = { version: ReviewStore.VERSION, records: parsed.records };
+                        }
+                    }
+                } catch {
+                    // Corrupt JSON or unavailable storage: start empty and keep
+                    // the app usable rather than throwing on boot.
+                    this.data = { version: ReviewStore.VERSION, records: {} };
+                    this.available = false;
+                }
+            }
+
+            private save() {
+                if (!this.available) return;
+                try {
+                    localStorage.setItem(ReviewStore.KEY, JSON.stringify(this.data));
+                } catch {
+                    // Quota exceeded or private-mode denial: stop persisting but
+                    // let the current session carry on.
+                    this.available = false;
+                }
+            }
+
+            /** FNV-1a 32-bit over the normalised question text and its options. */
+            private hash(question: string, options: string[]): string {
+                const norm = (s: string) => s.normalize('NFC').trim();
+                const src = norm(question) + '' + options.map(norm).join('');
+                let h = 0x811c9dc5;
+                for (let i = 0; i < src.length; i++) {
+                    h ^= src.charCodeAt(i);
+                    h = Math.imul(h, 0x01000193);
+                }
+                return (h >>> 0).toString(36);
+            }
+
+            /** Record one confirmed answer. Correct answers to never-missed
+             *  questions are intentionally not stored. */
+            record(question: QuizQuestion, isCorrect: boolean, title: string) {
+                const key = this.hash(question.question, question.options);
+                const now = Date.now();
+                let rec = this.data.records[key];
+
+                if (isCorrect) {
+                    if (!rec) return;
+                    rec.weak = false;
+                    rec.seen += 1;
+                    rec.lastSeen = now;
+                } else {
+                    if (!rec) {
+                        rec = this.data.records[key] = {
+                            q: question.question,
+                            options: question.options,
+                            correct: question.correct,
+                            explanation: question.explanation,
+                            deck: question.deck,
+                            title,
+                            wrong: 0,
+                            seen: 0,
+                            weak: true,
+                            firstMissed: now,
+                            lastSeen: now,
+                        };
+                    }
+                    rec.wrong += 1;
+                    rec.seen += 1;
+                    rec.weak = true;
+                    rec.lastSeen = now;
+                }
+                this.save();
+            }
+
+            /** Weak questions, most-missed first. */
+            getWeak(): ReviewRecord[] {
+                return Object.values(this.data.records)
+                    .filter((r) => r.weak)
+                    .sort((a, b) => b.wrong - a.wrong || a.firstMissed - b.firstMissed);
+            }
+
+            weakCount(): number {
+                return this.getWeak().length;
+            }
+
+            /** Build a playable quiz from stored records — no source file needed. */
+            buildQuiz(records: ReviewRecord[]): QuizQuestion[] {
+                return records.map((r, i) => ({
+                    id: `review-${i}`,
+                    question: r.q,
+                    options: r.options,
+                    correct: r.correct,
+                    explanation: r.explanation,
+                    deck: r.deck,
+                }));
+            }
+
+            /** Empty the weak list; miss-count history is kept. */
+            clearWeak() {
+                for (const key of Object.keys(this.data.records)) {
+                    this.data.records[key].weak = false;
+                }
+                this.save();
+            }
+        }
+
         class QuizApp {
             private quizData: QuizData | null = null;
             private currentQuestionIndex = 0;
@@ -114,9 +275,12 @@ import NavBar from '../components/NavBar.astro';
             private quizQueue: QuizData[] = [];
             private currentQuizIndex = 0;
             private allResults: Array<{title: string; correct: number; total: number}> = [];
+            private reviewStore = new ReviewStore();
+            private sessionWrong: QuizQuestion[] = [];
 
             constructor() {
                 this.setupEventListeners();
+                this.renderReviewSection();
             }
 
             private setupEventListeners() {
@@ -135,6 +299,9 @@ import NavBar from '../components/NavBar.astro';
                 newQuizBtn.addEventListener('click', () => this.loadNewQuiz());
                 loadUrlsBtn.addEventListener('click', () => this.handleUrlLoad());
                 loadSampleBtn.addEventListener('click', () => this.loadSampleQuiz());
+
+                document.getElementById('review-start-btn')!.addEventListener('click', () => this.startReviewFromStore());
+                document.getElementById('review-reset-btn')!.addEventListener('click', () => this.resetReview());
 
                 // タブ切り替え
                 document.querySelectorAll('[data-source]').forEach(tab => {
@@ -220,6 +387,49 @@ import NavBar from '../components/NavBar.astro';
                 this.quizQueue = [];
                 this.currentQuizIndex = 0;
                 this.allResults = [];
+
+                this.renderReviewSection();
+            }
+
+            /** Show or hide the home review card, filling in the weak count. */
+            private renderReviewSection() {
+                const section = document.getElementById('review-section')!;
+                const count = this.reviewStore.weakCount();
+
+                if (count === 0) {
+                    section.style.display = 'none';
+                    return;
+                }
+
+                section.style.display = '';
+                document.getElementById('review-count')!.textContent = `${count}問`;
+                document.getElementById('review-lede')!.textContent =
+                    'これまで間違えた問題です。正解するとリストから外れます。';
+            }
+
+            private startReviewFromStore() {
+                const records = this.reviewStore.getWeak();
+                if (records.length === 0) return;
+                this.startReviewSession(this.reviewStore.buildQuiz(records));
+            }
+
+            /**
+             * Run an ad-hoc quiz built from the given questions. It reuses the
+             * normal queue path, so scoring, the track, and answer recording all
+             * behave exactly as they do for a loaded file.
+             */
+            private startReviewSession(questions: QuizQuestion[]) {
+                if (questions.length === 0) return;
+                this.quizQueue = [{ meta: { title: '復習' }, questions }];
+                this.currentQuizIndex = 0;
+                this.allResults = [];
+                this.startQuizFromQueue();
+            }
+
+            private resetReview() {
+                if (!confirm('苦手リストを空にします。よろしいですか？（間違えた回数の記録は残ります）')) return;
+                this.reviewStore.clearWeak();
+                this.renderReviewSection();
             }
 
             private handleKeydown(event: KeyboardEvent) {
@@ -414,6 +624,10 @@ import NavBar from '../components/NavBar.astro';
                 const question = this.quizData.questions[this.currentQuestionIndex];
                 const isCorrect = this.selectedOption === question.correct;
 
+                // The single recording hook: every confirmed answer — in a normal
+                // quiz, a review session, or a wrong-only retry — passes here.
+                this.reviewStore.record(question, isCorrect, this.quizData.meta.title);
+
                 this.showExplanation(isCorrect);
                 this.updateOptionStates();
                 this.renderTrack();
@@ -554,6 +768,13 @@ import NavBar from '../components/NavBar.astro';
                     answer === this.quizData!.questions[index].correct
                 ).length;
 
+                // Offer a wrong-only retry only on the true end of the run (a
+                // single quiz, or the last of a queue), scoped to this quiz's misses.
+                const hasNextQuiz = this.currentQuizIndex + 1 < this.quizQueue.length;
+                this.sessionWrong = hasNextQuiz
+                    ? []
+                    : this.quizData.questions.filter((q, i) => this.userAnswers[i] !== q.correct);
+
                 const totalQuestions = this.quizData.questions.length;
                 const percentage = Math.round((correctCount / totalQuestions) * 100);
 
@@ -615,10 +836,22 @@ import NavBar from '../components/NavBar.astro';
                     document.getElementById('next-btn')!.style.display = 'none';
                 }
 
+                if (this.sessionWrong.length > 0) {
+                    resultHtml += `
+                        <div class="btn-row" style="margin-top: var(--space-md);">
+                            <button type="button" class="btn" id="retry-wrong-btn">間違えた問題だけやり直す（${this.sessionWrong.length}問）</button>
+                        </div>`;
+                }
+
                 const resultText = document.getElementById('result-text')!;
                 resultText.innerHTML = resultHtml;
                 document.getElementById('result-section')!.style.display = '';
                 this.startCounters(resultText);
+
+                document.getElementById('retry-wrong-btn')?.addEventListener(
+                    'click',
+                    () => this.startReviewSession(this.sessionWrong),
+                );
 
                 // ボタンの表示制御
                 document.getElementById('new-quiz-btn')!.style.display = '';
