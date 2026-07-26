@@ -51,6 +51,27 @@ Selecta のクイズは JSON ファイル。`meta` ブロックと `questions` �
 キーボードは `1`–`9` が 1〜9 番目、`0` が 10 番目に対応し、11 個以上ある選択肢は
 クリック / タップでのみ選べる。
 
+## URL から配布するときの CORS
+
+URL 読み込み（URL タブ・`?source=`）は、そのファイルをホストするサーバーが
+**別オリジンからの読み込みを許可**していないと失敗する。ブラウザの CORS 制限で
+`fetch` がブロックされ、`Failed to fetch` になる（クライアント側では回避できない）。
+
+- アプリと**同じオリジン**に置いたファイルは追加設定なしで読める。
+- **別ドメイン**（ローカル開発中の `localhost`、他人の Selecta など）から読ませたいなら、
+  ファイルを返すサーバーで `Access-Control-Allow-Origin` を付ける。Apache なら:
+
+  ```apache
+  <FilesMatch "\.json$">
+      Header set Access-Control-Allow-Origin "*"
+      Header set Access-Control-Allow-Methods "GET, OPTIONS"
+      Header append Vary "Origin"
+  </FilesMatch>
+  ```
+
+  付いているかは `curl -I -H "Origin: https://example.com" <URL>` で
+  `access-control-allow-origin` が返るか確認する。
+
 ## CSV / Anki 変換は 4 択固定
 
 変換ツール（`/convert`）だけは **4 択固定**。CSV は
