@@ -54,13 +54,23 @@ import NavBar from '../components/NavBar.astro';
                     </div>
                 </div>
 
-                <div class="shuffle-row">
-                    <label class="switch">
-                        <input type="checkbox" id="shuffle-toggle" class="switch__input" />
-                        <span class="switch__box" aria-hidden="true"></span>
-                        <span class="switch__text">選択肢をシャッフルする</span>
-                    </label>
-                    <p class="help">番号ではなく内容で覚えられます。次に始めるクイズから有効です。</p>
+                <div class="shuffle-group">
+                    <div class="shuffle-row">
+                        <label class="switch">
+                            <input type="checkbox" id="shuffle-toggle" class="switch__input" />
+                            <span class="switch__box" aria-hidden="true"></span>
+                            <span class="switch__text">選択肢をシャッフルする</span>
+                        </label>
+                        <p class="help">番号ではなく内容で覚えられます。次に始めるクイズから有効です。</p>
+                    </div>
+                    <div class="shuffle-row">
+                        <label class="switch">
+                            <input type="checkbox" id="qshuffle-toggle" class="switch__input" />
+                            <span class="switch__box" aria-hidden="true"></span>
+                            <span class="switch__text">問題の順番をシャッフルする</span>
+                        </label>
+                        <p class="help">出題順をランダムにします。次に始めるクイズから有効です。</p>
+                    </div>
                 </div>
             </div>
 
@@ -294,6 +304,15 @@ import NavBar from '../components/NavBar.astro';
              * canonical order, so the review hash (order-dependent) never shifts.
              */
             private displayOrders: number[][] = [];
+            /**
+             * Play-position → canonical-index map for the current quiz:
+             * questionOrder[playPos] is the index into quizData.questions shown at
+             * that step. Off yields the identity order; on is a Fisher–Yates
+             * shuffle. Only the *order of presentation* changes — question content,
+             * scoring, userAnswers/displayOrders, and the review hash (which is
+             * order-independent anyway) all stay in canonical space.
+             */
+            private questionOrder: number[] = [];
 
             constructor() {
                 this.setupEventListeners();
@@ -347,6 +366,10 @@ import NavBar from '../components/NavBar.astro';
                 const shuffleToggle = document.getElementById('shuffle-toggle') as HTMLInputElement;
                 shuffleToggle.checked = this.shuffleEnabled();
                 shuffleToggle.addEventListener('change', () => this.setShuffleEnabled(shuffleToggle.checked));
+
+                const qShuffleToggle = document.getElementById('qshuffle-toggle') as HTMLInputElement;
+                qShuffleToggle.checked = this.questionShuffleEnabled();
+                qShuffleToggle.addEventListener('change', () => this.setQuestionShuffleEnabled(qShuffleToggle.checked));
 
                 // タブ切り替え
                 document.querySelectorAll('[data-source]').forEach(tab => {
@@ -594,7 +617,7 @@ import NavBar from '../components/NavBar.astro';
                     // index so shuffled options score against the right answer.
                     const displayPos = digit === '0' ? 9 : parseInt(digit) - 1;
                     const optionCount =
-                        this.quizData.questions[this.currentQuestionIndex].options.length;
+                        this.quizData.questions[this.canonical()].options.length;
                     if (displayPos >= optionCount) return;
 
                     event.preventDefault();
@@ -648,6 +671,7 @@ import NavBar from '../components/NavBar.astro';
             }
 
             private static readonly SHUFFLE_KEY = 'selecta.shuffle.v1';
+            private static readonly QSHUFFLE_KEY = 'selecta.qshuffle.v1';
 
             /** Whether answer options should be shuffled. Default off. */
             private shuffleEnabled(): boolean {
@@ -665,6 +689,52 @@ import NavBar from '../components/NavBar.astro';
                     // Private mode / quota: the current tab keeps the checkbox
                     // state; it just won't persist across reloads.
                 }
+            }
+
+            /** Whether the question order should be shuffled. Default off. */
+            private questionShuffleEnabled(): boolean {
+                try {
+                    return localStorage.getItem(QuizApp.QSHUFFLE_KEY) === 'on';
+                } catch {
+                    return false;
+                }
+            }
+
+            private setQuestionShuffleEnabled(on: boolean): void {
+                try {
+                    localStorage.setItem(QuizApp.QSHUFFLE_KEY, on ? 'on' : 'off');
+                } catch {
+                    // Same as the option toggle: keep the current tab's state,
+                    // just don't persist it.
+                }
+            }
+
+            /**
+             * Build the play-position → canonical map for the current quiz. Off is
+             * the identity order (JSON order); on is a Fisher–Yates shuffle. Called
+             * once per quiz start (and per restart) so the order stays stable while
+             * navigating back and forth within a session.
+             */
+            private buildQuestionOrder(): void {
+                this.questionOrder = [];
+                if (!this.quizData) return;
+                const order = this.quizData.questions.map((_, i) => i);
+                if (this.questionShuffleEnabled()) {
+                    for (let i = order.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [order[i], order[j]] = [order[j], order[i]];
+                    }
+                }
+                this.questionOrder = order;
+            }
+
+            /**
+             * The canonical index of the question at the current play position.
+             * Everything that reads question content or per-question state goes
+             * through here; the identity fallback keeps it safe before a quiz starts.
+             */
+            private canonical(): number {
+                return this.questionOrder[this.currentQuestionIndex] ?? this.currentQuestionIndex;
             }
 
             /**
@@ -689,14 +759,16 @@ import NavBar from '../components/NavBar.astro';
                 }
             }
 
-            /** The display order for the current question, identity as a fallback. */
+            /** The option display order for the current question, identity fallback. */
             private currentOrder(): number[] {
-                return this.displayOrders[this.currentQuestionIndex]
-                    ?? this.quizData!.questions[this.currentQuestionIndex].options.map((_, i) => i);
+                const c = this.canonical();
+                return this.displayOrders[c]
+                    ?? this.quizData!.questions[c].options.map((_, i) => i);
             }
 
             private startQuiz() {
                 if (!this.quizData) return;
+                this.buildQuestionOrder();
                 this.buildDisplayOrders();
 
                 document.getElementById('file-input-section')!.style.display = 'none';
@@ -727,15 +799,20 @@ import NavBar from '../components/NavBar.astro';
                 track.className = final ? 'track track--result' : 'track';
                 track.innerHTML = '';
 
-                this.quizData.questions.forEach((question, index) => {
+                // Walk the track in play order so the segments read left-to-right
+                // as the session unfolds; each maps back to its canonical question
+                // for the answer/correctness colour.
+                this.questionOrder.forEach((canonical, playPos) => {
                     const seg = document.createElement('span');
                     seg.className = 'track__seg';
 
-                    const answer = this.userAnswers[index];
+                    const answer = this.userAnswers[canonical];
                     if (answer !== null) {
-                        seg.classList.add(answer === question.correct ? 'is-ok' : 'is-ng');
+                        seg.classList.add(
+                            answer === this.quizData!.questions[canonical].correct ? 'is-ok' : 'is-ng',
+                        );
                     }
-                    if (!final && index === this.currentQuestionIndex) {
+                    if (!final && playPos === this.currentQuestionIndex) {
                         seg.classList.add('is-now');
                     }
                     track.appendChild(seg);
@@ -745,7 +822,8 @@ import NavBar from '../components/NavBar.astro';
             private displayQuestion() {
                 if (!this.quizData) return;
 
-                const question = this.quizData.questions[this.currentQuestionIndex];
+                const qIndex = this.canonical();
+                const question = this.quizData.questions[qIndex];
                 const questionText = document.getElementById('question-text')!;
                 const optionsContainer = document.getElementById('options-container')!;
                 const questionCounter = document.getElementById('question-counter')!;
@@ -753,8 +831,8 @@ import NavBar from '../components/NavBar.astro';
                 const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
 
                 // 状態をリセット
-                this.selectedOption = this.userAnswers[this.currentQuestionIndex] ?? -1;
-                this.isConfirmed = this.userAnswers[this.currentQuestionIndex] !== null;
+                this.selectedOption = this.userAnswers[qIndex] ?? -1;
+                this.isConfirmed = this.userAnswers[qIndex] !== null;
 
                 questionText.textContent = question.question;
                 questionCounter.textContent = `Q ${this.currentQuestionIndex + 1} / ${this.quizData.questions.length}`;
@@ -766,7 +844,7 @@ import NavBar from '../components/NavBar.astro';
                 // so clicks and scoring stay in canonical space.
                 const order = this.currentOrder();
                 order.forEach((canonical, displayPos) => {
-                    const hasAnswered = this.userAnswers[this.currentQuestionIndex] !== null;
+                    const hasAnswered = this.userAnswers[qIndex] !== null;
 
                     const optBtn = document.createElement('button');
                     optBtn.type = 'button';
@@ -799,10 +877,10 @@ import NavBar from '../components/NavBar.astro';
                 });
 
                 prevBtn.disabled = this.currentQuestionIndex === 0;
-                nextBtn.disabled = this.userAnswers[this.currentQuestionIndex] === null;
+                nextBtn.disabled = this.userAnswers[qIndex] === null;
 
-                if (this.userAnswers[this.currentQuestionIndex] !== null) {
-                    const selectedAnswer = this.userAnswers[this.currentQuestionIndex];
+                if (this.userAnswers[qIndex] !== null) {
+                    const selectedAnswer = this.userAnswers[qIndex];
                     this.showExplanation(selectedAnswer === question.correct);
                     this.updateOptionStates();
                 } else {
@@ -822,11 +900,12 @@ import NavBar from '../components/NavBar.astro';
             private confirmAnswer() {
                 if (!this.quizData || this.selectedOption < 0) return;
 
-                this.userAnswers[this.currentQuestionIndex] = this.selectedOption;
+                const qIndex = this.canonical();
+                this.userAnswers[qIndex] = this.selectedOption;
                 this.isConfirmed = true;
                 this.isAnswered = true;
 
-                const question = this.quizData.questions[this.currentQuestionIndex];
+                const question = this.quizData.questions[qIndex];
                 const isCorrect = this.selectedOption === question.correct;
 
                 // The single recording hook: every confirmed answer — in a normal
@@ -844,8 +923,8 @@ import NavBar from '../components/NavBar.astro';
             private updateOptionStates() {
                 if (!this.quizData) return;
 
-                const question = this.quizData.questions[this.currentQuestionIndex];
-                const selectedAnswer = this.userAnswers[this.currentQuestionIndex];
+                const question = this.quizData.questions[this.canonical()];
+                const selectedAnswer = this.userAnswers[this.canonical()];
                 const options = document.querySelectorAll('#options-container .opt');
                 const order = this.currentOrder();
 
@@ -928,7 +1007,7 @@ import NavBar from '../components/NavBar.astro';
             private showExplanation(isCorrect: boolean) {
                 if (!this.quizData) return;
 
-                const question = this.quizData.questions[this.currentQuestionIndex];
+                const question = this.quizData.questions[this.canonical()];
                 const resultSection = document.getElementById('result-section')!;
                 const resultText = document.getElementById('result-text')!;
 
@@ -1069,7 +1148,8 @@ import NavBar from '../components/NavBar.astro';
                 this.currentQuestionIndex = 0;
                 this.userAnswers = new Array(this.quizData!.questions.length).fill(null);
                 // Re-shuffle on retry so remembered positions from the first pass
-                // don't carry over (a no-op when shuffle is off).
+                // don't carry over (a no-op when both shuffles are off).
+                this.buildQuestionOrder();
                 this.buildDisplayOrders();
                 this.isAnswered = false;
                 this.selectedOption = -1;
