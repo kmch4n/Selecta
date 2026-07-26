@@ -21,3 +21,4 @@
 - [design-system-is-design-md](design-system-is-design-md.md) — 色・余白・書体の判断は `design.md` に従う
 - [theme-toggle](theme-toggle.md) — ダークは data-theme + localStorage のオプトイン。既定ライト・OS 非追従
 - [review-store](review-store.md) — 苦手復習は設問の内容ハッシュで localStorage に永続化する
+- [shuffle-display-only](shuffle-display-only.md) — 選択肢/設問順シャッフルは表示だけ。採点・復習は canonical 順のまま
