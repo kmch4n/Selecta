@@ -53,6 +53,15 @@ import NavBar from '../components/NavBar.astro';
                         <button type="button" class="btn btn--soft" id="load-urls-btn">読み込む</button>
                     </div>
                 </div>
+
+                <div class="shuffle-row">
+                    <label class="switch">
+                        <input type="checkbox" id="shuffle-toggle" class="switch__input" />
+                        <span class="switch__box" aria-hidden="true"></span>
+                        <span class="switch__text">選択肢をシャッフルする</span>
+                    </label>
+                    <p class="help">番号ではなく内容で覚えられます。次に始めるクイズから有効です。</p>
+                </div>
             </div>
 
             <div class="card" id="review-section" style="display: none;">
@@ -277,6 +286,14 @@ import NavBar from '../components/NavBar.astro';
             private allResults: Array<{title: string; correct: number; total: number}> = [];
             private reviewStore = new ReviewStore();
             private sessionWrong: QuizQuestion[] = [];
+            /**
+             * Per-question display permutation: displayOrders[q][displayPos] is the
+             * canonical option index shown at that position. Options are only
+             * shuffled for display — quizData.options/correct and everything that
+             * scores or persists (userAnswers, the track, ReviewStore) stay in
+             * canonical order, so the review hash (order-dependent) never shifts.
+             */
+            private displayOrders: number[][] = [];
 
             constructor() {
                 this.setupEventListeners();
@@ -326,6 +343,10 @@ import NavBar from '../components/NavBar.astro';
 
                 document.getElementById('review-start-btn')!.addEventListener('click', () => this.startReviewFromStore());
                 document.getElementById('review-reset-btn')!.addEventListener('click', () => this.resetReview());
+
+                const shuffleToggle = document.getElementById('shuffle-toggle') as HTMLInputElement;
+                shuffleToggle.checked = this.shuffleEnabled();
+                shuffleToggle.addEventListener('change', () => this.setShuffleEnabled(shuffleToggle.checked));
 
                 // タブ切り替え
                 document.querySelectorAll('[data-source]').forEach(tab => {
@@ -569,13 +590,15 @@ import NavBar from '../components/NavBar.astro';
                     // 既に回答が確定済みの場合は無効
                     if (this.isConfirmed) return;
 
-                    const optionIndex = digit === '0' ? 9 : parseInt(digit) - 1;
+                    // digit is a display position; map it back to the canonical
+                    // index so shuffled options score against the right answer.
+                    const displayPos = digit === '0' ? 9 : parseInt(digit) - 1;
                     const optionCount =
                         this.quizData.questions[this.currentQuestionIndex].options.length;
-                    if (optionIndex >= optionCount) return;
+                    if (displayPos >= optionCount) return;
 
                     event.preventDefault();
-                    this.selectedOption = optionIndex;
+                    this.selectedOption = this.currentOrder()[displayPos];
                     this.highlightSelectedOption();
                 }
 
@@ -624,8 +647,57 @@ import NavBar from '../components/NavBar.astro';
                 nextBtn.textContent = label;
             }
 
+            private static readonly SHUFFLE_KEY = 'selecta.shuffle.v1';
+
+            /** Whether answer options should be shuffled. Default off. */
+            private shuffleEnabled(): boolean {
+                try {
+                    return localStorage.getItem(QuizApp.SHUFFLE_KEY) === 'on';
+                } catch {
+                    return false;
+                }
+            }
+
+            private setShuffleEnabled(on: boolean): void {
+                try {
+                    localStorage.setItem(QuizApp.SHUFFLE_KEY, on ? 'on' : 'off');
+                } catch {
+                    // Private mode / quota: the current tab keeps the checkbox
+                    // state; it just won't persist across reloads.
+                }
+            }
+
+            /**
+             * Build a per-question display order for the current quiz. Off yields
+             * the identity order; on yields a Fisher–Yates shuffle of the option
+             * indices. Called once per quiz start (and per restart) so the order
+             * stays stable while navigating back and forth within a session.
+             */
+            private buildDisplayOrders(): void {
+                this.displayOrders = [];
+                if (!this.quizData) return;
+                const shuffle = this.shuffleEnabled();
+                for (const question of this.quizData.questions) {
+                    const order = question.options.map((_, i) => i);
+                    if (shuffle) {
+                        for (let i = order.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [order[i], order[j]] = [order[j], order[i]];
+                        }
+                    }
+                    this.displayOrders.push(order);
+                }
+            }
+
+            /** The display order for the current question, identity as a fallback. */
+            private currentOrder(): number[] {
+                return this.displayOrders[this.currentQuestionIndex]
+                    ?? this.quizData!.questions[this.currentQuestionIndex].options.map((_, i) => i);
+            }
+
             private startQuiz() {
                 if (!this.quizData) return;
+                this.buildDisplayOrders();
 
                 document.getElementById('file-input-section')!.style.display = 'none';
                 document.getElementById('quiz-section')!.style.display = '';
@@ -690,7 +762,10 @@ import NavBar from '../components/NavBar.astro';
                 this.renderTrack();
 
                 optionsContainer.innerHTML = '';
-                question.options.forEach((option, index) => {
+                // Render in display order; each button carries its canonical index
+                // so clicks and scoring stay in canonical space.
+                const order = this.currentOrder();
+                order.forEach((canonical, displayPos) => {
                     const hasAnswered = this.userAnswers[this.currentQuestionIndex] !== null;
 
                     const optBtn = document.createElement('button');
@@ -700,11 +775,11 @@ import NavBar from '../components/NavBar.astro';
 
                     const key = document.createElement('span');
                     key.className = 'opt__key';
-                    key.textContent = `${index + 1}`;
+                    key.textContent = `${displayPos + 1}`;
 
                     const text = document.createElement('span');
                     text.className = 'opt__text';
-                    text.textContent = option;
+                    text.textContent = question.options[canonical];
 
                     const mark = document.createElement('span');
                     mark.className = 'opt__mark';
@@ -716,7 +791,7 @@ import NavBar from '../components/NavBar.astro';
                     optBtn.addEventListener('click', () => {
                         if (this.isConfirmed) return; // 回答確定済みの場合はクリック無効
 
-                        this.selectedOption = index;
+                        this.selectedOption = canonical;
                         this.confirmAnswer();
                     });
 
@@ -737,9 +812,10 @@ import NavBar from '../components/NavBar.astro';
 
             private highlightSelectedOption() {
                 const options = document.querySelectorAll('#options-container .opt');
+                const order = this.currentOrder();
 
-                options.forEach((option, index) => {
-                    option.classList.toggle('is-selected', index === this.selectedOption);
+                options.forEach((option, displayPos) => {
+                    option.classList.toggle('is-selected', order[displayPos] === this.selectedOption);
                 });
             }
 
@@ -771,10 +847,12 @@ import NavBar from '../components/NavBar.astro';
                 const question = this.quizData.questions[this.currentQuestionIndex];
                 const selectedAnswer = this.userAnswers[this.currentQuestionIndex];
                 const options = document.querySelectorAll('#options-container .opt');
+                const order = this.currentOrder();
 
-                options.forEach((option, index) => {
-                    const isSelected = selectedAnswer === index;
-                    const isCorrect = index === question.correct;
+                options.forEach((option, displayPos) => {
+                    const canonical = order[displayPos];
+                    const isSelected = selectedAnswer === canonical;
+                    const isCorrect = canonical === question.correct;
                     const mark = option.querySelector('.opt__mark')!;
 
                     option.classList.remove('is-selected', 'is-ok', 'is-ng', 'is-dim');
@@ -990,6 +1068,9 @@ import NavBar from '../components/NavBar.astro';
             private restart() {
                 this.currentQuestionIndex = 0;
                 this.userAnswers = new Array(this.quizData!.questions.length).fill(null);
+                // Re-shuffle on retry so remembered positions from the first pass
+                // don't carry over (a no-op when shuffle is off).
+                this.buildDisplayOrders();
                 this.isAnswered = false;
                 this.selectedOption = -1;
                 this.isConfirmed = false;
