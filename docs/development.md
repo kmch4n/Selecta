@@ -30,7 +30,12 @@ pnpm run preview   # ビルド結果をローカルでプレビュー
 - **復習ストア**：間違えた設問を `localStorage`（キー `selecta.review.v1`）に永続化し、
   ホームの復習セクションと終了画面の再挑戦で出題する。設問の識別は問題文＋選択肢の
   内容ハッシュによる（設問 `id` には依存しない）。
-- **ライト専用**。ダークテーマは持たない。
+- **シャッフル**：選択肢の並び（キー `selecta.shuffle.v1`）と設問の出題順
+  （キー `selecta.qshuffle.v1`）をそれぞれ独立に ON/OFF できる。既定は両方 OFF。
+  シャッフルは**表示だけ**で、採点・復習記録・アンサートラックは元の並び（canonical）の
+  ままなので、順序依存の復習ハッシュはずれない。詳細は [`../.memory/shuffle-display-only.md`](../.memory/shuffle-display-only.md)。
+- **テーマ**：ライトが既定、ダークは `<html data-theme="dark">` によるオプトインのトグル
+  （キー `selecta.theme.v1`）。OS 設定（`prefers-color-scheme`）には追従しない。
 
 ## もっと詳しく
 
