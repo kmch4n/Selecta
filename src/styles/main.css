@@ -501,7 +501,7 @@ button {
 .quiz__q {
     font-size: var(--text-2xl);
     margin-block: var(--space-lg) var(--space-md);
-    max-width: 26ch;
+    max-width: var(--measure-q);
 }
 
 /* --------------------------------------------------------------------------
