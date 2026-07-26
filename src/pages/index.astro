@@ -314,10 +314,36 @@ import NavBar from '../components/NavBar.astro';
              */
             private questionOrder: number[] = [];
 
+            /**
+             * One-time overrides parsed from the URL (?shuffle / ?qshuffle). null
+             * means "defer to the stored toggle"; true/false force the value for
+             * this load only. The override is read but never written to storage,
+             * so a shared link can't change the recipient's saved preference.
+             */
+            private shuffleOverride: boolean | null = null;
+            private qShuffleOverride: boolean | null = null;
+
             constructor() {
+                this.applyShuffleOverridesFromQuery();
                 this.setupEventListeners();
                 this.renderReviewSection();
                 this.autoLoadFromQuery();
+            }
+
+            /**
+             * Read ?shuffle=on|off and ?qshuffle=on|off as a session-only override.
+             * Absent or unrecognized values leave the stored toggle in charge; the
+             * override is never persisted to localStorage. Parsed before
+             * setupEventListeners so the checkboxes reflect the effective value.
+             */
+            private applyShuffleOverridesFromQuery(): void {
+                const params = new URLSearchParams(location.search);
+                const parse = (raw: string | null): boolean | null => {
+                    const v = raw?.trim().toLowerCase();
+                    return v === 'on' ? true : v === 'off' ? false : null;
+                };
+                this.shuffleOverride = parse(params.get('shuffle'));
+                this.qShuffleOverride = parse(params.get('qshuffle'));
             }
 
             /**
@@ -365,11 +391,19 @@ import NavBar from '../components/NavBar.astro';
 
                 const shuffleToggle = document.getElementById('shuffle-toggle') as HTMLInputElement;
                 shuffleToggle.checked = this.shuffleEnabled();
-                shuffleToggle.addEventListener('change', () => this.setShuffleEnabled(shuffleToggle.checked));
+                shuffleToggle.addEventListener('change', () => {
+                    // A deliberate toggle is the user's real preference: drop the
+                    // URL override and persist their choice from here on.
+                    this.shuffleOverride = null;
+                    this.setShuffleEnabled(shuffleToggle.checked);
+                });
 
                 const qShuffleToggle = document.getElementById('qshuffle-toggle') as HTMLInputElement;
                 qShuffleToggle.checked = this.questionShuffleEnabled();
-                qShuffleToggle.addEventListener('change', () => this.setQuestionShuffleEnabled(qShuffleToggle.checked));
+                qShuffleToggle.addEventListener('change', () => {
+                    this.qShuffleOverride = null;
+                    this.setQuestionShuffleEnabled(qShuffleToggle.checked);
+                });
 
                 // タブ切り替え
                 document.querySelectorAll('[data-source]').forEach(tab => {
@@ -675,6 +709,7 @@ import NavBar from '../components/NavBar.astro';
 
             /** Whether answer options should be shuffled. Default off. */
             private shuffleEnabled(): boolean {
+                if (this.shuffleOverride !== null) return this.shuffleOverride;
                 try {
                     return localStorage.getItem(QuizApp.SHUFFLE_KEY) === 'on';
                 } catch {
@@ -693,6 +728,7 @@ import NavBar from '../components/NavBar.astro';
 
             /** Whether the question order should be shuffled. Default off. */
             private questionShuffleEnabled(): boolean {
+                if (this.qShuffleOverride !== null) return this.qShuffleOverride;
                 try {
                     return localStorage.getItem(QuizApp.QSHUFFLE_KEY) === 'on';
                 } catch {
