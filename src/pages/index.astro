@@ -373,24 +373,123 @@ import NavBar from '../components/NavBar.astro';
             }
 
             private async loadQuizzesFromUrls(urls: string[]) {
-                try {
-                    this.quizQueue = [];
-                    for (const url of urls) {
-                        const response = await fetch(url);
-                        if (!response.ok) {
-                            throw new Error(`Failed to load ${url}: ${response.statusText}`);
-                        }
-                        const quizData = await response.json();
-                        this.quizQueue.push(quizData);
+                // Fetch and validate everything up front. The quiz only starts once
+                // every URL has produced a schema-valid quiz — a half-loaded queue
+                // must never reach startQuiz, or displayQuestion/renderTrack would
+                // crash mid-render on a malformed entry and leave a broken screen.
+                const queue: QuizData[] = [];
+                const showUrl = urls.length > 1;
+                for (const url of urls) {
+                    let quizData: unknown;
+                    try {
+                        quizData = await this.fetchQuiz(url);
+                    } catch (error) {
+                        const where = showUrl ? `\n${url}` : '';
+                        alert(`クイズの読み込みに失敗しました。${where}\n\n${this.loadErrorMessage(error)}`);
+                        console.error(error);
+                        return;
                     }
-
-                    this.currentQuizIndex = 0;
-                    this.allResults = [];
-                    this.startQuizFromQueue();
-                } catch (error) {
-                    alert('クイズの読み込みに失敗しました: ' + error);
-                    console.error(error);
+                    queue.push(quizData as QuizData);
                 }
+
+                this.quizQueue = queue;
+                this.currentQuizIndex = 0;
+                this.allResults = [];
+                this.startQuizFromQueue();
+            }
+
+            /**
+             * Fetch one quiz URL and return validated data. Throws a tagged Error
+             * (see loadErrorMessage) so the caller can tell the failure modes apart:
+             * network/CORS, HTTP status, JSON parse, and schema mismatch.
+             */
+            private async fetchQuiz(url: string): Promise<QuizData> {
+                let response: Response;
+                try {
+                    response = await fetch(url);
+                } catch (cause) {
+                    // fetch() rejects with a TypeError for network failures and,
+                    // crucially, CORS blocks — a cross-origin file whose server does
+                    // not send Access-Control-Allow-Origin lands here.
+                    throw new Error("NETWORK", { cause });
+                }
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                let data: unknown;
+                try {
+                    data = await response.json();
+                } catch (cause) {
+                    // Not JSON — most often an HTML page (a share/blob link, a login
+                    // wall, or a 200 error page) served with the wrong content.
+                    throw new Error("PARSE", { cause });
+                }
+                this.validateQuizData(data);
+                return data;
+            }
+
+            /** Turn a fetchQuiz error into an actionable Japanese message. */
+            private loadErrorMessage(error: unknown): string {
+                if (error instanceof Error) {
+                    if (error.message === "NETWORK") {
+                        return "URL に到達できません。ネットワークを確認してください。別ドメインのファイルの場合、"
+                            + "そのサーバーが CORS（Access-Control-Allow-Origin）を許可していない可能性があります。";
+                    }
+                    if (error.message.startsWith("HTTP ")) {
+                        return `サーバーが ${error.message} を返しました。URL が正しいか確認してください。`;
+                    }
+                    if (error.message === "PARSE") {
+                        return "JSON として解釈できませんでした。共有ページの URL ではなく、"
+                            + "JSON ファイルそのものの URL を指定してください。";
+                    }
+                    return error.message; // schema validation detail
+                }
+                return String(error);
+            }
+
+            /**
+             * Validate against quiz-schema.json (the parts the player relies on).
+             * `id` is intentionally not required — the player identifies questions by
+             * content hash, not id (see .memory/review-store.md), so we stay lenient.
+             * Throws an Error naming the offending question on the first problem.
+             */
+            private validateQuizData(data: unknown): asserts data is QuizData {
+                if (typeof data !== "object" || data === null) {
+                    throw new Error("クイズデータがオブジェクトではありません。");
+                }
+                const root = data as Record<string, unknown>;
+                const meta = root.meta as Record<string, unknown> | undefined;
+                if (!meta || typeof meta.title !== "string") {
+                    throw new Error("meta.title（クイズのタイトル）がありません。");
+                }
+                const questions = root.questions;
+                if (!Array.isArray(questions) || questions.length === 0) {
+                    throw new Error("questions（設問の配列）が空か、配列ではありません。");
+                }
+                questions.forEach((q, i) => {
+                    const label = `設問 ${i + 1}`;
+                    if (typeof q !== "object" || q === null) {
+                        throw new Error(`${label}: 設問がオブジェクトではありません。`);
+                    }
+                    const question = q as Record<string, unknown>;
+                    if (typeof question.question !== "string") {
+                        throw new Error(`${label}: question（問題文）が文字列ではありません。`);
+                    }
+                    const options = question.options;
+                    if (!Array.isArray(options) || options.length < 2) {
+                        throw new Error(`${label}: options（選択肢）は 2 つ以上必要です。`);
+                    }
+                    if (options.some((o) => typeof o !== "string")) {
+                        throw new Error(`${label}: options に文字列でない選択肢があります。`);
+                    }
+                    const correct = question.correct;
+                    if (typeof correct !== "number" || !Number.isInteger(correct)
+                        || correct < 0 || correct >= options.length) {
+                        throw new Error(
+                            `${label}: correct(${String(correct)}) が選択肢数(${options.length})の範囲外です。`
+                        );
+                    }
+                });
             }
 
             private startQuizFromQueue() {
